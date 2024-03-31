@@ -141,7 +141,19 @@ def get_notification_by_id(request, notification_id):
 @extend_schema(
     summary="Add New Contact",
     description="Allows authenticated users to add a new contact.",
-    request=ContactSerializer,
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "contact_id": {
+                    "type": "integer",
+                    "description": "The ID of the user to be added as a contact."
+                }
+            },
+            "required": ["contact_id"],
+            "example": {"contact_id": 2}
+        }
+    },
     responses={
         201: {"description": "Contact added successfully."},
         400: {"description": "Bad Request - Incorrect or incomplete data provided."},
@@ -413,3 +425,11 @@ def change_group_name(request, group_id):
         serializer.save()
         return Response({'detail': 'Group name changed successfully.'})
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)

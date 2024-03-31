@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import create_user_view, profile_edit_view, get_active_notifications, get_notification_by_id, \
     list_contacts_view, add_contact_view, create_group_view, list_groups_view, view_group, delete_group, remove_member, \
-    add_member, change_group_name, delete_contact_view
+    add_member, change_group_name, delete_contact_view, get_all_users
 
 
 urlpatterns = [
@@ -19,4 +19,5 @@ urlpatterns = [
     path('group/<int:group_id>/remove/<str:username>/', remove_member, name='remove-member'),
     path('group/<int:group_id>/add/<str:username>/', add_member, name='add-member'),
     path('group/<int:group_id>/change-name/', change_group_name, name='change-group-name'),
+    path('user/user_list/', get_all_users, name='user-list'),
 ]

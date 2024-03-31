@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id','username', 'email', 'password', 'password2', 'first_name', 'last_name')
+        fields = ('id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name')
         extra_kwargs = {
             'password': {'write_only': True, 'style': {'input_type': 'password'}, 'required': True},
             'email': {'required': True, 'allow_blank': True},
@@ -84,17 +84,19 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class ContactSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='contact.username', read_only=True)
+    email = serializers.EmailField(source='contact.email', read_only=True)
+    first_name = serializers.CharField(source='contact.first_name', read_only=True)
+    last_name = serializers.CharField(source='contact.last_name', read_only=True)
+    user_id = serializers.IntegerField(source='contact.id', read_only=True)
 
     class Meta:
         model = Contacts
-        fields = ['id', 'username']
+        fields = ['id', 'user_id', 'email', 'first_name', 'last_name']
 
     def create(self, validated_data):
-        # 'request' is added to the serializer context in the view.
         user = self.context['request'].user
-        contact_username = self.context['request'].data.get('username')
-        contact_user = get_object_or_404(User, username=contact_username)
+        contact_id = self.context['request'].data.get('contact_id')
+        contact_user = get_object_or_404(User, pk=contact_id)
 
         if user == contact_user:
             raise serializers.ValidationError("You cannot add yourself as a contact.")

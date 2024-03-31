@@ -7,6 +7,7 @@ pip install drf-spectacular
 pip install Pillow
 pip install djangorestframework-simplejwt
 pip install django-enumfields
+pip install django-cors-headers
 cd oneonone
 python3 manage.py makemigrations
 python3 manage.py migrate
