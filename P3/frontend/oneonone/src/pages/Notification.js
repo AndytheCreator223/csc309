@@ -40,6 +40,7 @@ const Notifications = () => {
       );
 
       setSelectedNotification(response.data); // Store the detailed notification data
+      console.log(selectedNotification)
       fetchNotifications(); // Refresh to get the updated 'is_seen' status for all notifications
     } catch (err) {
       console.error("Failed to fetch notification details", err);
@@ -59,7 +60,7 @@ const Notifications = () => {
                 key={notification.id}
                 onClick={() => fetchNotificationById(notification.id)}
                 className={`notification-block mb-3 mt-3 card ${
-                  notification.is_seen ? "green-color" : "bg-light"
+                  notification.is_seen ? "bg-success" : "bg-light"
                 }`}
                 style={{ cursor: "pointer" }}
               >

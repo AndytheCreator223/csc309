@@ -68,7 +68,7 @@ class UserSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ['id', 'title', 'content']
+        fields = ['id', 'title', 'content',"is_seen"]
 
     def __init__(self, *args, **kwargs):
         # Pop 'context' from kwargs to access it directly
