@@ -14,50 +14,35 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name')
         extra_kwargs = {
             'password': {'write_only': True, 'style': {'input_type': 'password'}, 'required': True},
-            'email': {'required': True, 'allow_blank': True},
-            'first_name': {'required': True, 'allow_blank': True},
-            'last_name': {'required': True, 'allow_blank': True},
+            'email': {'required': True, 'allow_blank': False},  # Consider not allowing blank for email
+            'first_name': {'required': True, 'allow_blank': False},  # Consider not allowing blank for first_name
+            'last_name': {'required': True, 'allow_blank': False},  # Consider not allowing blank for last_name
         }
 
     def validate(self, data):
-        # Validate password match
-        if 'password' in data:
-            password = data.get('password')
-            password2 = data.pop('password2', None)
-
-            if password != password2:
+        if 'password' in data and 'password2' in data:
+            if data['password'] != data.pop('password2'):
                 raise serializers.ValidationError({"password2": "Passwords must match."})
-
-            # Create a temporary user instance for validation
-            temp_user = User(username=data.get('username'), email=data.get('email'), first_name=data.get('first_name'),
-                             last_name=data.get('last_name'))
-
-            # Validate the password against Django's password validation rules, including similarity checks
-            try:
-                validate_password(password, temp_user)
-            except ValidationError as e:
-                raise serializers.ValidationError({'password': e.messages})
 
         return data
 
     def create(self, validated_data):
-        validated_data.pop('password2', None)  # Remove password2 as it's only for validation
+        validated_data.pop('password2', None)  # Ensure 'password2' is not passed to the create_user method
         user = User.objects.create_user(**validated_data)
         return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        validated_data.pop('password2', None)
+        validated_data.pop('password2', None)  # Ensure 'password2' is removed from validated_data
 
         if password:
-            # Validate the new password against Django's password validators
             try:
                 validate_password(password, instance)
+                instance.set_password(password)
             except ValidationError as e:
-                raise serializers.ValidationError({'password': e.messages})
+                raise serializers.ValidationError({'password': list(e.messages)})
 
-            instance.set_password(password)
-
+        # Iterate over remaining validated_data and update instance
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
