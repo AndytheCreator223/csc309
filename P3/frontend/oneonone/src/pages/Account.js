@@ -66,7 +66,7 @@ const AccountUpdate = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.patch('http://127.0.0.1:8000/api/account/profile/', formData, config);
   
-      window.alert("Profile updated successfully!");
+      window.alert("Profile updated");
       setError('');
     } catch (err) {
       console.error('Failed to update profile:', err);

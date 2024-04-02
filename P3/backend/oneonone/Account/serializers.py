@@ -14,38 +14,53 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'password', 'password2', 'first_name', 'last_name')
         extra_kwargs = {
             'password': {'write_only': True, 'style': {'input_type': 'password'}, 'required': True},
-            'email': {'required': True, 'allow_blank': False},  # Consider not allowing blank for email
-            'first_name': {'required': True, 'allow_blank': False},  # Consider not allowing blank for first_name
-            'last_name': {'required': True, 'allow_blank': False},  # Consider not allowing blank for last_name
+            'email': {'required': True, 'allow_blank': False},
+            'first_name': {'required': True, 'allow_blank': False},
+            'last_name': {'required': True, 'allow_blank': False},
         }
 
     def validate(self, data):
-        if 'password' in data and 'password2' in data:
-            if data['password'] != data.pop('password2'):
+        # Validate password match
+        if 'password' in data:
+            password = data.get('password')
+            password2 = data.pop('password2', None)
+            if password != password2:
                 raise serializers.ValidationError({"password2": "Passwords must match."})
+
+            # Validate the password against Django's password validation rules
+            try:
+                validate_password(password)
+            except ValidationError as e:
+                raise serializers.ValidationError({'password': e.messages})
 
         return data
 
     def create(self, validated_data):
-        validated_data.pop('password2', None)  # Ensure 'password2' is not passed to the create_user method
-        user = User.objects.create_user(**validated_data)
+        # 'password2' has already been removed by validate
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        user.set_password(validated_data['password'])
+        user.save()
         return user
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
-        validated_data.pop('password2', None)  # Ensure 'password2' is removed from validated_data
 
         if password:
+            # Validate the new password against Django's password validators
             try:
                 validate_password(password, instance)
-                instance.set_password(password)
             except ValidationError as e:
-                raise serializers.ValidationError({'password': list(e.messages)})
+                raise serializers.ValidationError({'password': e.messages})
 
-        # Iterate over remaining validated_data and update instance
+            instance.set_password(password)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
         instance.save()
         return instance
 
@@ -67,28 +82,31 @@ class NotificationSerializer(serializers.ModelSerializer):
     def get_content(self, obj):
         return obj.content
 
-
 class ContactSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source='contact.email', read_only=True)
-    first_name = serializers.CharField(source='contact.first_name', read_only=True)
-    last_name = serializers.CharField(source='contact.last_name', read_only=True)
-    user_id = serializers.IntegerField(source='contact.id', read_only=True)
+    username = serializers.CharField(write_only=True, required=True)
+
+    contact_email = serializers.EmailField(source='contact.email', read_only=True)
+    contact_first_name = serializers.CharField(source='contact.first_name', read_only=True)
+    contact_last_name = serializers.CharField(source='contact.last_name', read_only=True)
+    contact_username = serializers.CharField(source='contact.username', read_only=True)
+    
 
     class Meta:
         model = Contacts
-        fields = ['id', 'user_id', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'contact_email', 'contact_first_name', 'contact_last_name','contact_username']
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        contact_id = self.context['request'].data.get('contact_id')
-        contact_user = get_object_or_404(User, pk=contact_id)
+        requesting_user = self.context['request'].user
+        username = validated_data.pop('username', None)
+        contact_user = get_object_or_404(User, username=username)
 
-        if user == contact_user:
-            raise serializers.ValidationError("You cannot add yourself as a contact.")
-        if Contacts.objects.filter(owner=user, contact=contact_user).exists():
-            raise serializers.ValidationError("This user is already in your contacts.")
+        if requesting_user == contact_user:
+            raise serializers.ValidationError({"username": "You cannot add yourself as a contact."})
+        if Contacts.objects.filter(owner=requesting_user, contact=contact_user).exists():
+            raise serializers.ValidationError({"username": "This user is already in your contacts."})
 
-        return Contacts.objects.create(owner=user, contact=contact_user)
+        contact = Contacts.objects.create(owner=requesting_user, contact=contact_user)
+        return contact
 
 
 class GroupSerializer(serializers.ModelSerializer):

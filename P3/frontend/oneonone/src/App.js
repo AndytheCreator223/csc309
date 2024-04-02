@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Account from "./pages/Account";
 import Meetings from "./pages/Meetings";
 import Notification from "./pages/Notification"; 
+import Contacts from "./pages/Contact";
 import "./style.css";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/meetings" element={<Meetings />} />
         <Route path="/notifications" element={<Notification />} />
+        <Route path="/contacts" element={<Contacts />} />
       </Routes>
     </Router>
   );

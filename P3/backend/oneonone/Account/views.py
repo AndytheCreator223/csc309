@@ -138,62 +138,35 @@ def get_notification_by_id(request, notification_id):
     return Response(serializer.data)
 
 ####################################################################################################################################################################################
-@extend_schema(
-    summary="Add New Contact",
-    description="Allows authenticated users to add a new contact.",
-    request={
-        "application/json": {
-            "type": "object",
-            "properties": {
-                "contact_id": {
-                    "type": "integer",
-                    "description": "The ID of the user to be added as a contact."
-                }
-            },
-            "required": ["contact_id"],
-            "example": {"contact_id": 2}
-        }
-    },
-    responses={
-        201: {"description": "Contact added successfully."},
-        400: {"description": "Bad Request - Incorrect or incomplete data provided."},
-    },
-)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_contact_view(request):
+    # Instantiate the serializer with request data and context
     serializer = ContactSerializer(data=request.data, context={'request': request})
+    
+    # Validate the serializer
     if serializer.is_valid():
+        # If valid, save the new contact instance
         serializer.save()
+        # Return a success response with custom detail message
         return Response({'detail': 'Contact added successfully.'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        # If validation fails, return a detailed error response
+        detailed_errors = {field: error for field, error in serializer.errors.items()}
+        return Response({'errors': detailed_errors, 'detail': 'Failed to add contact.'}, status=status.HTTP_400_BAD_REQUEST)
 
 ####################################################################################################################################################################################
-@extend_schema(
-    summary="Delete Contact",
-    description="Allows authenticated users to delete a contact by its ID. Only the owner of the contact can delete it.",
-    parameters=[
-        {
-            "name": "contact_id",
-            "in": "path",
-            "required": True,
-            "description": "The contact with contact_id will be deleted.",
-            "schema": {
-                "type": "integer"
-            }
-        }
-    ],
-    responses={
-        204: {"description": "Contact deleted successfully."},
-        404: {"description": "Contact not found."},
-    },
-)
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def delete_contact_view(request, contact_id):
-    # Try to get the contact instance
+def delete_contact_view(request, username):
+    # Retrieve the contact_user by username
+    contact_user = get_object_or_404(User, username=username)
+    
+    # Try to get the contact instance where the contact_user is the contact
     try:
-        contact = Contacts.objects.get(id=contact_id, owner=request.user)
+        contact = Contacts.objects.get(owner=request.user, contact=contact_user)
     except Contacts.DoesNotExist:
         return Response({'detail': 'Contact not found.'}, status=status.HTTP_404_NOT_FOUND)
 
