@@ -163,7 +163,7 @@ class FinalizedMeetingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FinalizedMeeting
-        fields = ('title', 'time', 'time_limit', 'participant')
+        fields = ('id', 'title', 'time', 'time_limit', 'participant')
 
 
 class TimeSlotCreateSerializer(serializers.ModelSerializer):

@@ -198,6 +198,12 @@ h4{
 .schedule {
   background-color: white;
   border-radius: 0.9375rem;
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 1rem;
+  gap: 1rem;
 }
 
 .suggest{
@@ -270,10 +276,7 @@ h4{
 }
 
 .pending-meetings {
-  height: 60vh;
-
   background-color: white;
-  margin: 0 1rem 1.5625rem 1rem;
   border-radius: 0.9375rem;
   display: flex;
   flex-grow: 1;
@@ -290,9 +293,8 @@ h4{
   padding: 0.25rem;
   text-align: center;
   border: 0.1rem solid #ddd;
-  border-radius: 5px;
+  border-radius: 0.9375rem;
   flex-grow: 1;
-  max-height: 20%;
 }
 
 .schedule-title {
