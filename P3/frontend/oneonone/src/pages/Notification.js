@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Sidebar from "../components/Sidebar"; // Adjust the import path as necessary
+import Sidebar from "../components/Sidebar";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);

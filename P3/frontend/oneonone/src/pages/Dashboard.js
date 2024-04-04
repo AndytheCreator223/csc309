@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Sidebar from "../components/Sidebar";
-import DashboardCalendar from "../components/DashboardCalendar";
+import DisplayCalendar from "../components/DisplayCalendar";
 import axios from "axios";
 
 const Dashboard = () => {
@@ -46,7 +46,7 @@ const Dashboard = () => {
                         <div className="big-box">
                             <div className="mt-3 mb-3">
                                 <h2>Dashboard</h2>
-                                <DashboardCalendar/>
+                                <DisplayCalendar/>
                             </div>
                         </div>
                     </div>

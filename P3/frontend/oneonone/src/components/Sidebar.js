@@ -46,8 +46,8 @@ const Sidebar = () => {
             </div>
             <ul className="nav flex-column">
                 <li className="nav-item">
-                    <Link to="/new-meeting"
-                          className={`nav-link new-meeting-btn green-color ${isActive('/new-meeting') ? 'active' : ''}`}>
+                    <Link to="/create-meeting"
+                          className={`nav-link new-meeting-btn green-color ${isActive('/create-meeting') ? 'active' : ''}`}>
                         New Meeting
                     </Link>
                 </li>

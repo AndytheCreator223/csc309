@@ -12,7 +12,7 @@ const styles = {
   }
 };
 
-const DashboardCalendar = () => {
+const DisplayCalendar = () => {
   const calendarRef = useRef()
   const now = new DayPilot.Date();
 
@@ -77,4 +77,4 @@ const DashboardCalendar = () => {
   );
 }
 
-export default DashboardCalendar;
+export default DisplayCalendar;
