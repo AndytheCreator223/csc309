@@ -110,7 +110,10 @@ class ContactSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    members = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all(), many=True)
+    members = serializers.SlugRelatedField(slug_field='username', 
+                                           queryset=User.objects.all(), 
+                                           many=True, 
+                                           required=False)
 
     class Meta:
         model = Group
@@ -135,9 +138,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        members = validated_data.pop('members')
+        members = validated_data.pop('members', [])  # Handle the absence of members in the validated data
         group = Group.objects.create(owner=user, **validated_data)
-        group.members.set(members)  # Ensures no duplicate members within the group
+        group.members.set(members)
         return group
 
 
