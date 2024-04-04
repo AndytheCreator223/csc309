@@ -59,7 +59,7 @@ const Dashboard = () => {
                                         <h3>{meeting.title}</h3>
                                         <p>{meeting.time}</p>
                                         <p>Duration: {meeting.time_limit} minutes</p>
-                                        <p>Participant: {meeting.participant.first_name} {meeting.participant.last_name}</p>
+                                        <p>Participants: {meeting.owner.first_name} {meeting.owner.last_name}, {meeting.participant.first_name} {meeting.participant.last_name}</p>
                                     </div>
                                 ))}
                             </div>

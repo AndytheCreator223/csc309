@@ -22,6 +22,7 @@ const Notifications = () => {
         config
       );
       setNotifications(response.data);
+      setError("");
     } catch (err) {
       console.error("Failed to fetch notifications", err);
       setError("Failed to load notifications.");
@@ -42,45 +43,113 @@ const Notifications = () => {
       setSelectedNotification(response.data); // Store the detailed notification data
       console.log(selectedNotification)
       fetchNotifications(); // Refresh to get the updated 'is_seen' status for all notifications
+      setError("");
     } catch (err) {
       console.error("Failed to fetch notification details", err);
       setError("Failed to load notification details.");
     }
   };
 
+  const markAllAsSeen = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      await axios.post(
+        "http://127.0.0.1:8000/api/account/notifications/mark-all-seen/",
+        {}, // No data needed for this request
+        config
+      );
+      fetchNotifications(); // Refresh notifications to reflect the changes
+      setError("");
+    } catch (err) {
+      console.error("Failed to mark all notifications as seen", err);
+      setError("Failed to mark all notifications as seen");
+    }
+  };
+
+  const deleteNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      await axios.delete(
+        `http://127.0.0.1:8000/api/account/notifications/delete/${notificationId}/`,
+        config
+      );
+      // After deletion, refresh the notifications list
+      fetchNotifications();
+      setError("");
+    } catch (err) {
+      console.error("Failed to delete notification", err);
+      setError("Failed to delete notification.");
+    }
+  };
+
+  const deleteReadNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      await axios.post(
+        "http://127.0.0.1:8000/api/account/notifications/delete-read/",
+        {}, // No data needed for this request
+        config
+      );
+      fetchNotifications(); // Refresh notifications to reflect the changes
+      setError("");
+    } catch (err) {
+      console.error("Failed to delete read notifications", err);
+      setError("Failed to delete read notifications.");
+    }
+  };
+
   return (
     <div className="container-fluid">
       <div className="row">
-        <Sidebar /> 
+        <Sidebar />
         <div className="col-md-10 main-content pt-4">
-          <h2>Notifications</h2>
+          <div className="d-flex justify-content-between align-items-center">
+            <h2>Notifications</h2>
+            <div>
+              <button onClick={markAllAsSeen} className="btn btn-primary me-2">Read All Notifications</button>
+              <button onClick={deleteReadNotifications} className="btn btn-danger">Delete All Read Notifications</button>
+            </div>
+          </div>
           {notifications.length > 0 ? (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                onClick={() => fetchNotificationById(notification.id)}
-                className={`notification-block mb-3 mt-3 card ${
-                  notification.is_seen ? "bg-success" : "bg-light"
-                }`}
-                style={{ cursor: "pointer" }}
-              >
-                <div className="card-body">
-                  <h5 className="card-title font-weight-bold">
-                    {notification.title}
-                  </h5>
-                  <p className="card-text">{notification.message}</p>
-                </div>
-                {selectedNotification &&
-                  selectedNotification.id === notification.id && (
-                    <div className="card-footer">
-                      {selectedNotification.content}
-                    </div>
-                  )}
+          notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`notification-block mb-3 mt-3 card ${notification.is_seen ? "bg-light" : "bg-warning"}`}
+              style={{ cursor: "pointer", position: "relative" }}
+            >
+              <div className="card-body" onClick={() => fetchNotificationById(notification.id)}>
+                <h5 className="card-title font-weight-bold">{notification.title}</h5>
+                <p className="card-text">{notification.message}</p>
               </div>
-            ))
-          ) : (
-            <p>No active notifications</p>
-          )}
+              {notification.is_seen && (
+                <button
+                  className="btn btn-danger"
+                  style={{ position: "absolute", top: "10px", right: "10px" }}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent triggering the notification's onClick
+                    deleteNotification(notification.id);
+                  }}
+                >
+                  Delete
+                </button>
+              )}
+            {selectedNotification && selectedNotification.id === notification.id && (
+              <div className="card-footer">{selectedNotification.content}</div>
+            )}
+            </div>
+              ))
+            ) : (
+              <p>No active notifications</p>
+            )}
           {error && <div className="alert alert-danger">{error}</div>}
         </div>
       </div>

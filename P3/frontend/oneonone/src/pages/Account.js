@@ -5,6 +5,7 @@ import profilePic from './selva.jpg'; // Ensure you have the correct path
 
 const AccountUpdate = () => {
   const [profile, setProfile] = useState({
+    username: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -23,6 +24,7 @@ const AccountUpdate = () => {
         const response = await axios.get('http://127.0.0.1:8000/api/account/profile/', config);
         setProfile(prevState => ({
           ...prevState,
+          username: response.data.username,
           first_name: response.data.first_name,
           last_name: response.data.last_name,
           email: response.data.email
@@ -103,6 +105,12 @@ const AccountUpdate = () => {
                       <img src={profilePic} alt="Profile" width="100" height="100" className="profile-pic" />
                     </div>
                     {/* Existing Fields */}
+                    <div className="form-group mb-4">
+                      <label htmlFor="username">Username:</label>
+                    <div className="form-control-plaintext" id="username" readOnly>
+                      {profile.username}
+                    </div>
+                    </div>
                     <div className="form-group mb-4">
                       <label htmlFor="first_name">First Name:</label>
                       <input type="text" className="form-control" id="first_name" name="first_name" value={profile.first_name} onChange={handleChange} required />

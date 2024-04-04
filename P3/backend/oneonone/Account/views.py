@@ -80,13 +80,16 @@ def profile_edit_view(request):
 def get_active_notifications(request):
     current_time = timezone.now()
 
-    Notification.objects.filter(expire_time__lt=current_time).delete()
+    Notification.objects.filter(
+        expire_time__lt=current_time,
+        is_seen=True
+    ).delete()
 
     notifications = Notification.objects.filter(
         owner=request.user,
         show_time__lte=current_time,
         expire_time__gt=current_time
-    )
+    ).order_by('expire_time')
     serializer = NotificationSerializer(notifications, many=True, context={'show_content': False})
     return Response(serializer.data)
 
@@ -312,15 +315,12 @@ def delete_group(request, group_id):
 @permission_classes([IsAuthenticated])
 def remove_member(request, group_id, username):
     group = get_object_or_404(Group, id=group_id, owner=request.user)
-    serializer = GroupMemberUpdateSerializer(data={'username': username}, context={'request': request})
-    if serializer.is_valid():
-        user_to_remove = User.objects.get(username=username)
-        if group.members.filter(id=user_to_remove.id).exists():
-            group.members.remove(user_to_remove)
-            return Response({'detail': f'{username} removed from the group.'})
-        else:
-            return Response({'detail': f'{username} is not in the group.'}, status=status.HTTP_400_BAD_REQUEST)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    user_to_remove = User.objects.get(username=username)
+    if group.members.filter(id=user_to_remove.id).exists():
+        group.members.remove(user_to_remove)
+        return Response({'detail': f'{username} removed from the group.'})
+    else:
+        return Response({'detail': f'{username} is not in the group.'}, status=status.HTTP_400_BAD_REQUEST)
 
 ####################################################################################################################################################################################
 @extend_schema(
@@ -407,3 +407,39 @@ def get_all_users(request):
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_as_seen(request):
+    current_time = timezone.now()
+    # Update all unread notifications for the user to be marked as seen
+    Notification.objects.filter(
+        owner=request.user,
+        is_seen=False,
+        show_time__lte=current_time,  # Consider marking only past notifications as seen
+        expire_time__gt=current_time  # Optionally, ignore notifications that have expired
+    ).update(is_seen=True)
+
+    return Response({'detail': 'All notifications marked as seen.'}, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_notification(request, notification_id):
+    # Retrieve the notification, ensuring it belongs to the requesting user
+    notification = get_object_or_404(Notification, id=notification_id, owner=request.user)
+
+    # Delete the notification
+    notification.delete()
+
+    # Return a success response
+    return Response({'detail': 'Notification deleted successfully.'}, status=status.HTTP_200_OK)
+
+# In your_app/views.py
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_read_notifications(request):
+    # Filter and delete all read notifications for the user
+    Notification.objects.filter(owner=request.user, is_seen=True).delete()
+
+    return Response({'detail': 'All read notifications deleted successfully.'}, status=status.HTTP_200_OK)

@@ -17,14 +17,16 @@ from .serializers import (PendingMeetingSerializer,
                           TimeSlotCreateSerializer,
                           ParticipantCreateSerializer,
                           PendingMeetingUpdateSerializer,
-                          ParticipantUpdateSerializer,)
+                          ParticipantUpdateSerializer,
+                          CustomPendingMeetingSerializer,)
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework.decorators import api_view, permission_classes
 from .suggest_schedule import suggest_schedule
 from django.core.mail import EmailMessage
 from datetime import datetime, timedelta
 from rest_framework import serializers
-
+from django.utils import timezone
+from django.db.models import Q
 
 def send_email(subject, message, recipient_list, reply_to):
     try:
@@ -51,7 +53,7 @@ class PendingMeetingList(APIView):
         responses={200: PendingMeetingSerializer(many=True)},
     )
     def get(self, request):
-        meetings = PendingMeeting.objects.filter(owner=request.user)
+        meetings = PendingMeeting.objects.filter(owner=request.user).order_by('deadline')
         serializer = PendingMeetingSerializer(meetings, many=True)
         return Response(serializer.data)
 
@@ -216,7 +218,6 @@ class ParticipantDeleteView(APIView):
         except Participant.DoesNotExist:
             return Response({'detail': 'Participant not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-
 class FinalizedMeetingList(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -226,8 +227,19 @@ class FinalizedMeetingList(APIView):
         responses={200: FinalizedMeetingSerializer(many=True)},
     )
     def get(self, request):
-        meetings = FinalizedMeeting.objects.filter(owner=request.user)
+        # Delete all finalized meetings with time before now
+        FinalizedMeeting.objects.filter(time__lt=timezone.now()).delete()
+
+        # Query for finalized meetings where the user is either the owner or a participant
+        user = request.user
+        meetings = FinalizedMeeting.objects.filter(
+            Q(owner=user) | Q(participant=user)
+        ).distinct().order_by('time')
+
+        # Serialize the meetings
         serializer = FinalizedMeetingSerializer(meetings, many=True)
+
+        # Return the response
         return Response(serializer.data)
 
 @extend_schema(
@@ -801,3 +813,14 @@ def send_email_view(request):
         return Response({'message': 'Email sent successfully.'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_participant_meetings(request):
+    user = request.user
+    # Fetch all meetings where the user is a participant but not the owner
+    meetings = PendingMeeting.objects.filter(participant__user=user).exclude(owner=user).distinct().order_by('deadline')
+    # Serialize the data using the custom serializer which filters participants
+    serializer = CustomPendingMeetingSerializer(meetings, many=True, context={'request': request})
+    return Response(serializer.data)

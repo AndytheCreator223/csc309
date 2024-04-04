@@ -65,6 +65,19 @@ class PendingMeetingSerializer(serializers.ModelSerializer):
         participants = Participant.objects.filter(meeting=obj)
         return ParticipantSerializer(participants, many=True).data
 
+class CustomPendingMeetingSerializer(serializers.ModelSerializer):
+    participants = serializers.SerializerMethodField()
+    class Meta:
+        model = PendingMeeting
+        fields = ('id', 'title', 'deadline', 'time_limit', 'participants')
+
+    def get_participants(self, obj):
+        user = self.context['request'].user  # Obtain the current user from the context
+        # Filter the Participant objects to include only the current user for the specific meeting
+        participant = Participant.objects.filter(meeting=obj, user=user)
+        # Assuming ParticipantSerializer is already defined and properly structured
+        return ParticipantSerializer(participant, many=True).data
+
 
 class PendingMeetingDetailSerializer(serializers.ModelSerializer):
     participants = serializers.SerializerMethodField()
@@ -159,11 +172,12 @@ class ParticipantUpdateSerializer(serializers.ModelSerializer):
 
 
 class FinalizedMeetingSerializer(serializers.ModelSerializer):
+    owner = UserSerializer(read_only=True)
     participant = UserSerializer(read_only=True)
 
     class Meta:
         model = FinalizedMeeting
-        fields = ('id', 'title', 'time', 'time_limit', 'participant')
+        fields = ('id', 'title', 'time', 'time_limit', 'owner', 'participant')
 
 
 class TimeSlotCreateSerializer(serializers.ModelSerializer):

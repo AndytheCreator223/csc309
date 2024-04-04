@@ -15,7 +15,8 @@ from .views import (PendingMeetingList,
                     get_suggested_meetings,
                     delete_pending_meeting,
                     notify_not_responded_invitees,
-                    send_email_view)
+                    send_email_view,
+                    list_participant_meetings)
 
 urlpatterns = [
     path('pending-meeting/list/', PendingMeetingList.as_view(), name='pending-meetings'),
@@ -34,14 +35,6 @@ urlpatterns = [
     path('participant/list/<int:meeting_id>/', get_meeting_participants, name='get_meeting_participants'),
     path('participant/detail/<int:meeting_id>/<int:user_id>/', get_participant_response, name='get_participant_response'),
 
-    # IntegrityError
-    #         at /api/meeting/participant/create/
-    # NOT NULL constraint failed: Meeting_participant.content
-    # input: {
-    #     "meeting": 7,
-    #     "user": 7
-    #     "content": ""
-    # }
     path('participant/create/', ParticipantCreateView.as_view(), name='create-participant'),
     path('participant/delete/<int:meeting_id>/<int:user_id>/', ParticipantDeleteView.as_view(), name='delete-participant'),
     path('participant/update/<int:meeting_id>/<int:user_id>/', ParticipantUpdateView.as_view(), name='update-participant'),
@@ -54,4 +47,5 @@ urlpatterns = [
     path('suggested-meeting/list/<int:meeting_id>/', get_suggested_meetings, name='get_suggested_meetings'),
 
     path('send-email/', send_email_view, name='send-email'),
+    path('pending-meeting/participant-meetings/', list_participant_meetings, name='list-participant-meetings'),
 ]
