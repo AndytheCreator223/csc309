@@ -58,7 +58,7 @@ const Contacts = () => {
     setError(message);
     setTimeout(() => {
       setError(""); // Clear the error after 5 seconds
-    }, 5000);
+    }, 10000);
   };
 
   const handleAddGroup = async (event) => {
