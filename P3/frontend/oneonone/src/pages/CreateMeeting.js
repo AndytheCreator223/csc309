@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SelectCalendar from '../components/SelectCalendar';
 import { MeetingProvider } from '../contexts/MeetingContext';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,89 @@ const CreateMeeting = () => {
     const [timeLimit, setTimeLimit] = useState('');
     const [error, setError] = useState('');
     const [isCustomTime, setIsCustomTime] = useState(false);
+    const [contacts, setContacts] = useState([]);
+    const [selectedContact, setSelectedContact] = useState('');
+    const [selectedContacts, setSelectedContacts] = useState([]);
+    const [groups, setGroups] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState('');
+
+    const fetchContacts = async () => {
+        try {
+            const token = localStorage.getItem("token"); // Assuming token storage for authentication
+            const response = await axios.get("http://127.0.0.1:8000/api/account/contacts/", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setContacts(response.data); // Assuming the API returns an array of contacts
+        } catch (error) {
+            console.error('Failed to fetch contacts:', error);
+            handleError("Failed to load contacts.");
+        }
+    };
+
+    useEffect(() => {
+        fetchContacts();
+    }, []);
+
+    const fetchGroups = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get("http://127.0.0.1:8000/api/account/group/", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setGroups(response.data); // Assuming the API returns an array of groups
+        } catch (error) {
+            console.error('Failed to fetch groups:', error);
+            handleError("Failed to load groups.");
+        }
+    };
+
+    useEffect(() => {
+        fetchGroups();
+    }, []);
+
+
+    const addParticipantsToMeeting = async (meetingId, participants) => {
+        const participantPromises = participants.map(participantId =>
+            axios.post('http://127.0.0.1:8000/api/meeting/participant/create/', {
+                meeting: meetingId,
+                user: participantId // Here, participantId is actually the user ID of each contact
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            })
+        );
+
+        try {
+            await Promise.all(participantPromises);
+            alert('Meeting successfully created');
+            window.location.href = '/meetings';
+        } catch (error) {
+            console.error('Failed to add one or more participants:', error);
+            handleError(`Failed to add one or more participants: ${error.response?.data.detail || 'Unknown error'}`);
+        }
+    };
+
+    const handleAddContact = () => {
+        const contactToAdd = contacts.find(contact => contact.id.toString() === selectedContact);
+        // Use contact_user_id for checking existing contacts to align with the group logic
+        if (contactToAdd && !selectedContacts.some(c => c.contact_user_id === contactToAdd.contact_user_id)) {
+            // Adapt the added contact structure to include contact_user_id and contact_username
+            const newContact = {
+                ...contactToAdd,
+                id: contactToAdd.contact_user_id, // Ensure consistent ID usage across individual and group adds
+                contact_username: contactToAdd.contact_username,
+            };
+            setSelectedContacts(prevContacts => [...prevContacts, newContact]);
+        }
+        setSelectedContact(''); // Reset dropdown after adding
+    };
+
+    const handleRemoveContact = (contactId) => {
+        setSelectedContacts(prevContacts => prevContacts.filter(contact => contact.id !== contactId));
+    };
 
     const handleTimeLimitChange = (e) => {
         if (e.target.value === "Custom") {
@@ -22,15 +105,40 @@ const CreateMeeting = () => {
         }
     };
 
+    const handleGroupSelection = (e) => {
+        setSelectedGroup(e.target.value);
+    };
+
+    const handleAddGroupMembers = () => {
+      const groupToAdd = groups.find(group => group.id.toString() === selectedGroup);
+      if (groupToAdd) {
+        // Use a new Set to track IDs for efficient lookup
+        const existingContactIds = new Set(selectedContacts.map(contact => contact.contact_user_id));
+
+        // Filter out members already in selectedContacts
+        const newMembers = groupToAdd.members.filter(member => !existingContactIds.has(member.id));
+
+        // Map new members to the expected structure and add them to selectedContacts
+        const updatedContacts = [
+          ...selectedContacts,
+          ...newMembers.map(member => ({
+            id: member.id, // Assuming member objects have an id field
+            contact_user_id: member.id, // Adjust if your contact objects use a different field for id
+            contact_username: member.username // Ensure this matches how usernames are stored/displayed in your contacts
+          }))
+        ];
+
+        setSelectedContacts(updatedContacts);
+      }
+      setSelectedGroup(''); // Reset the selected group dropdown after adding
+    };
+
     const handleCustomTimeChange = (e) => {
         setTimeLimit(e.target.value);
     };
 
     const handleError = (message) => {
         setError(message);
-        setTimeout(() => {
-            setError(''); // Clear the error after 5 seconds
-        }, 10000);
     };
 
     const handleSubmit = async (e) => {
@@ -55,12 +163,9 @@ const CreateMeeting = () => {
             );
 
             if (response.status === 201) {
-                setTitle('');
-                setMessage('');
-                setDeadline('');
-                setTimeLimit('');
-                alert('Meeting successfully created');
-                window.location.href = '/meetings';
+                const meetingId = response.data.id; // Assuming the response includes the meeting ID
+                const participants = selectedContacts.map(contact => contact.contact_user_id); // Adjusted to match your data structure
+                await addParticipantsToMeeting(meetingId, participants);
             }
 
         } catch (err) {
@@ -133,6 +238,42 @@ const CreateMeeting = () => {
                                         />
                                     )}
                                 </div>
+                            </div>
+                            {/* Contacts selection dropdown */}
+                            <div className="form-group">
+                                <label htmlFor="contacts-dropdown">Select Contact</label>
+                                <select className="form-control" id="contacts-dropdown" value={selectedContact} onChange={(e) => setSelectedContact(e.target.value)}>
+                                    <option value="">Choose...</option>
+                                      {contacts.map((contact) => (
+                                          <option key={contact.id} value={contact.id}>
+                                            {contact.contact_username}
+                                          </option>
+                                      ))}
+                                </select>
+                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add</button>
+                            </div>
+                            {/* Group selection dropdown */}
+                            <div className="form-group">
+                                <label htmlFor="groups-dropdown">Select Group</label>
+                                <select className="form-control" id="groups-dropdown" value={selectedGroup} onChange={handleGroupSelection}>
+                                    <option value="">Choose...</option>
+                                    {groups.map((group) => (
+                                        <option key={group.id} value={group.id}>
+                                            {group.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddGroupMembers}>Add</button>
+                            </div>
+                            <div>
+                                <h5>Selected Contacts:</h5>
+                                {selectedContacts.map((contact) => (
+                                    <div key={contact.id} className="alert alert-secondary" role="alert">
+                                        {contact.contact_username} <button type="button" className="close" onClick={() => handleRemoveContact(contact.id)}>
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    </div>
+                                ))}
                             </div>
                             <div className="message-for-contact" style={{ marginBottom: "15px" }}>
                                 <label htmlFor="message" className="label-frame label-frame-pink form-label">Message:</label>

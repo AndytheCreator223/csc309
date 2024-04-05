@@ -420,17 +420,15 @@ const Contacts = () => {
                     <button type="submit" className="btn btn-primary btn-sm">Edit</button>
                   </form>
                   <ul className="list-unstyled">
-                    {group.members.map((member, index) => (
+                    {group.members.map((member) => (
                       <li
-                        key={index}
+                        key={member.id}
                         className="d-flex justify-content-between align-items-center mb-2"
                       >
-                        <span className="flex-grow-1">{member}</span>
+                        <span className="flex-grow-1">{member.username}</span>
                         <button
                           className="btn btn-danger btn-sm"
-                          onClick={() =>
-                            handleRemoveMemberFromGroup(group.id, member)
-                          }
+                          onClick={() => handleRemoveMemberFromGroup(group.id, member.username)}
                         >
                           Remove
                         </button>

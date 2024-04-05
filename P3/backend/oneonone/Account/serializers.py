@@ -84,16 +84,18 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class ContactSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only=True, required=True)
-
     contact_email = serializers.EmailField(source='contact.email', read_only=True)
     contact_first_name = serializers.CharField(source='contact.first_name', read_only=True)
     contact_last_name = serializers.CharField(source='contact.last_name', read_only=True)
     contact_username = serializers.CharField(source='contact.username', read_only=True)
-    
+    contact_user_id = serializers.IntegerField(source='contact.id', read_only=True)  # Add this line
 
     class Meta:
         model = Contacts
-        fields = ['id', 'username', 'contact_email', 'contact_first_name', 'contact_last_name','contact_username']
+        fields = [
+            'id', 'username', 'contact_email', 'contact_first_name',
+            'contact_last_name', 'contact_username', 'contact_user_id'  # Include 'contact_user_id' here
+        ]
 
     def create(self, validated_data):
         requesting_user = self.context['request'].user
@@ -109,11 +111,14 @@ class ContactSerializer(serializers.ModelSerializer):
         return contact
 
 
+class GroupMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
+
 class GroupSerializer(serializers.ModelSerializer):
-    members = serializers.SlugRelatedField(slug_field='username', 
-                                           queryset=User.objects.all(), 
-                                           many=True, 
-                                           required=False)
+    members = GroupMemberSerializer(many=True, read_only=True)
 
     class Meta:
         model = Group
@@ -126,19 +131,9 @@ class GroupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A group with this name already exists.")
         return value
 
-    def validate_members(self, value):
-        # Ensure all members are in the user's contacts
-        user = self.context['request'].user
-        contacts = Contacts.objects.filter(owner=user).values_list('contact', flat=True)
-        for member in value:
-            if member.id not in contacts:
-                raise serializers.ValidationError("All members must be from the user's contacts.")
-            # This checks if each member is in the user's contact list.
-        return value
-
     def create(self, validated_data):
         user = self.context['request'].user
-        members = validated_data.pop('members', [])  # Handle the absence of members in the validated data
+        members = validated_data.pop('members', [])
         group = Group.objects.create(owner=user, **validated_data)
         group.members.set(members)
         return group

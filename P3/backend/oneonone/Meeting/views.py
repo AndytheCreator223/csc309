@@ -188,6 +188,7 @@ class ParticipantCreateView(APIView):
         responses={201: ParticipantCreateSerializer},
     )
     def post(self, request):
+        print(request.data)
         serializer = ParticipantCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             participant = serializer.save()

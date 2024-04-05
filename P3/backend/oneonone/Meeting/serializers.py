@@ -95,7 +95,7 @@ class PendingMeetingDetailSerializer(serializers.ModelSerializer):
 class PendingMeetingCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PendingMeeting
-        fields = ['title', 'message', 'deadline', 'time_limit']
+        fields = ['id', 'title', 'message', 'deadline', 'time_limit']
 
     def validate_time_limit(self, value):
         if value == 0:
