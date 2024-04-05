@@ -17,41 +17,38 @@ const CreateMeeting = () => {
     const [groups, setGroups] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
 
-    const fetchContacts = async () => {
-        try {
-            const token = localStorage.getItem("token"); // Assuming token storage for authentication
-            const response = await axios.get("http://127.0.0.1:8000/api/account/contacts/", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setContacts(response.data); // Assuming the API returns an array of contacts
-        } catch (error) {
-            console.error('Failed to fetch contacts:', error);
-            handleError("Failed to load contacts.");
-        }
-    };
-
     useEffect(() => {
+        const fetchContacts = async () => {
+            try {
+                const token = localStorage.getItem("token"); // Assuming token storage for authentication
+                const response = await axios.get("http://127.0.0.1:8000/api/account/contacts/", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setContacts(response.data); // Assuming the API returns an array of contacts
+            } catch (error) {
+                console.error('Failed to fetch contacts:', error);
+                handleError("Failed to load contacts.");
+            }
+        };
+
+        const fetchGroups = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get("http://127.0.0.1:8000/api/account/group/", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setGroups(response.data); // Assuming the API returns an array of groups
+            } catch (error) {
+                console.error('Failed to fetch groups:', error);
+                handleError("Failed to load groups.");
+            }
+        };
+
         fetchContacts();
-    }, []);
-
-    const fetchGroups = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get("http://127.0.0.1:8000/api/account/group/", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setGroups(response.data); // Assuming the API returns an array of groups
-        } catch (error) {
-            console.error('Failed to fetch groups:', error);
-            handleError("Failed to load groups.");
-        }
-    };
-
-    useEffect(() => {
         fetchGroups();
     }, []);
 
