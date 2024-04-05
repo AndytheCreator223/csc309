@@ -328,7 +328,7 @@ const Contacts = () => {
         <Sidebar />
 
         {/* Contact JSX */}
-        <div className="col-md-5">
+        <div className="col-md-5 main-content" >
           <h3 className="mt-3 mb-3">Add Contact</h3>
           <form className="input-group mb-3" onSubmit={handleAddContact}>
             <input
@@ -377,7 +377,7 @@ const Contacts = () => {
         </div>
 
         {/* Group JSX */}
-        <div className="col-md-5">
+        <div className="col-md-5 main-content">
           <h3 className="mt-3 mb-3">Add Group</h3>
           <form className="input-group mb-3" onSubmit={handleAddGroup}>
             <input
