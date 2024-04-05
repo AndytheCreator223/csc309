@@ -265,17 +265,24 @@ const CreateMeeting = () => {
                                 </select>
                                 <button type="button" className="btn btn-primary mt-2" onClick={handleAddGroupMembers}>Add</button>
                             </div>
-                            <div>
-                                <h5>Selected Contacts:</h5>
-                                {selectedContacts.map((contact) => (
-                                    <div key={contact.id} className="alert alert-secondary" role="alert">
-                                        {contact.contact_username} <button type="button" className="close" onClick={() => handleRemoveContact(contact.id)}>
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    </div>
-                                ))}
+                            <div className="mt-3">
+                              <h5>Selected Contacts:</h5>
+                              {selectedContacts.length > 0 ? (
+                                <ul className="list-group">
+                                  {selectedContacts.map((contact) => (
+                                    <li key={contact.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                      {contact.contact_username}
+                                      <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveContact(contact.id)}>
+                                        Remove
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-muted">No contacts selected.</p>
+                              )}
                             </div>
-                            <div className="message-for-contact" style={{ marginBottom: "15px" }}>
+                            <div className="message-for-contact" style={{ marginTop: "15px", marginBottom: "15px" }}>
                                 <label htmlFor="message" className="label-frame label-frame-pink form-label">Message:</label>
                                 <textarea className="form-control" id="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter your message here..."></textarea>
                             </div>

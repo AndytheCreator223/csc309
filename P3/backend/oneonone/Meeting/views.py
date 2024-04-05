@@ -639,7 +639,7 @@ def post_finalized_meetings(request):
     return Response({"message": "Meeting successfully Finalized. " + email_message}, status=status.HTTP_201_CREATED)
 
 @extend_schema(
-    summary='Get Suggested Schedule for a meeting',
+    summary='Get Suggested Schedule for a meeting, prioritizing on the order of invitee response',
     description="Retrieve a meeting's suggested schedule by the meeting id",
     responses={
         200: inline_serializer(
@@ -677,7 +677,7 @@ def post_finalized_meetings(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_suggested_meetings(request, meeting_id):
+def get_suggested_meetings_order(request, meeting_id):
     try:
         meeting = PendingMeeting.objects.get(pk=meeting_id)
         if request.user != meeting.owner:
@@ -688,25 +688,25 @@ def get_suggested_meetings(request, meeting_id):
 
     suggested_schedules = SuggestedSchedule.objects.filter(meeting_id=meeting_id)
     if len(suggested_schedules) != 0:
-        response_data = []
         for schedule in suggested_schedules:
-            time_slots = SuggestedTimeSlot.objects.filter(meeting=schedule).select_related('user')
+            if schedule.priority == Priority.INVITEE_ORDER:
+                time_slots = SuggestedTimeSlot.objects.filter(meeting=schedule).select_related('user')
 
-            slots_data = [
-                {"user": slot.user.pk, "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
-                for slot in time_slots if slot.time is not None
-            ]
-            left_overs = [
-                {"user": slot.user.pk}
-                for slot in time_slots if slot.time is None
-            ]
-            response_data.append({
-                "priority": schedule.priority.name,
-                "n_scheduled": schedule.n_scheduled,
-                "slots": slots_data,
-                "leftovers": left_overs
-            })
-        return Response({"suggested_meetings": response_data})
+                slots_data = [
+                    {"user": slot.user.pk, "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
+                    for slot in time_slots if slot.time is not None
+                ]
+                left_overs = [
+                    {"user": slot.user.pk}
+                    for slot in time_slots if slot.time is None
+                ]
+                response_data = {
+                    "priority": schedule.priority.name,
+                    "n_scheduled": schedule.n_scheduled,
+                    "slots": slots_data,
+                    "leftovers": left_overs
+                }
+                return Response({"suggested_meetings": response_data})
     else:
         time_slots = TimeSlot.objects.filter(meeting_id=meeting_id, user_id=meeting.owner_id)
         slots = []
@@ -734,7 +734,140 @@ def get_suggested_meetings(request, meeting_id):
                     available.add(index)
             responses.append((participant.user.pk, available, prioritized))
 
-        response_data = []
+        for priority in [Priority.INVITEE_PRIORITIES, Priority.INVITEE_ORDER]:
+            n_scheduled, matching, leftovers = suggest_schedule(slots, responses, priority)
+            suggested_schedule = SuggestedSchedule.objects.create(
+                meeting=meeting,
+                priority=priority,
+                n_scheduled=n_scheduled
+            )
+        for invitee in matching:
+            SuggestedTimeSlot.objects.create(
+                meeting=suggested_schedule,
+                time=matching[invitee],
+                user=User.objects.get(id=invitee)
+            )
+        slots_data = [
+            {"user": invitee,
+             "time": matching[invitee]}
+            for invitee in matching
+        ]
+        for invitee in leftovers:
+            SuggestedTimeSlot.objects.create(
+                meeting=suggested_schedule,
+                time=None,
+                user=User.objects.get(id=invitee)
+            )
+        left_overs = [
+            {"user": invitee}
+            for invitee in leftovers
+        ]
+        response_data = {
+            "priority": priority.name,
+            "n_scheduled": n_scheduled,
+            "slots": slots_data,
+            "leftovers": left_overs
+        }
+        return Response({"suggested_meetings": response_data})
+
+
+@extend_schema(
+    summary='Get Suggested Schedule for a meeting, prioritizing on the order of invitee preference',
+    description="Retrieve a meeting's suggested schedule by the meeting id",
+    responses={
+        200: inline_serializer(
+            name='SuggestedSchedule',
+            fields={
+                'suggested_meetings': serializers.ListField(
+                    child=inline_serializer(
+                        name='suggested_meeting',
+                        fields={
+                            "priority": serializers.CharField(),
+                            "n_scheduled": serializers.IntegerField(),
+                            'slots': serializers.ListField(
+                                child=inline_serializer(
+                                    name='TimeSLot',
+                                    fields={
+                                        "user": serializers.IntegerField(),
+                                        "time": serializers.DateTimeField(),
+                                    }
+                                )
+                            ),
+                            'leftovers': serializers.ListField(
+                                child=inline_serializer(
+                                    name='Leftover',
+                                    fields={
+                                        "user": serializers.IntegerField(),
+                                    }
+                                )
+                            )
+                        }
+                    )
+                )
+            }
+        ),
+    }
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_suggested_meetings_priority(request, meeting_id):
+    try:
+        meeting = PendingMeeting.objects.get(pk=meeting_id)
+        if request.user != meeting.owner:
+            return Response({"error": "You do not have permission to view this meeting."},
+                            status=status.HTTP_403_FORBIDDEN)
+    except PendingMeeting.DoesNotExist:
+        return Response({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    suggested_schedules = SuggestedSchedule.objects.filter(meeting_id=meeting_id)
+    if len(suggested_schedules) != 0:
+        for schedule in suggested_schedules:
+            if schedule.priority == Priority.INVITEE_PRIORITIES:
+                time_slots = SuggestedTimeSlot.objects.filter(meeting=schedule).select_related('user')
+
+                slots_data = [
+                    {"user": slot.user.pk, "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
+                    for slot in time_slots if slot.time is not None
+                ]
+                left_overs = [
+                    {"user": slot.user.pk}
+                    for slot in time_slots if slot.time is None
+                ]
+                response_data = {
+                    "priority": schedule.priority.name,
+                    "n_scheduled": schedule.n_scheduled,
+                    "slots": slots_data,
+                    "leftovers": left_overs
+                }
+                return Response({"suggested_meetings": response_data})
+    else:
+        time_slots = TimeSlot.objects.filter(meeting_id=meeting_id, user_id=meeting.owner_id)
+        slots = []
+        for time_slot in time_slots:
+            slots.append((time_slot.start_time.strftime("%Y-%m-%d %H:%M:%S"), time_slot.priority))
+
+        responses = []
+        positive_respondents = Participant.objects.filter(meeting_id=meeting_id, response=True).order_by(
+            'response_time')
+        for participant in positive_respondents:
+            available = set()
+            prioritized = set()
+            time_slots = TimeSlot.objects.filter(meeting_id=meeting_id, user=participant.user)
+            time_slots = [
+                (slot.start_time.strftime("%Y-%m-%d %H:%M:%S"), slot.priority)
+                for slot in time_slots
+            ]
+            for time, priority in time_slots:
+                index = next((index for index, (first, _) in enumerate(slots) if first == time), None)
+                if index is None:
+                    return Response({"error": f"Time slot {time} for {participant.user.pk} not found"},
+                                    status=status.HTTP_404_NOT_FOUND)
+                if priority == 1:
+                    prioritized.add(index)
+                else:
+                    available.add(index)
+            responses.append((participant.user.pk, available, prioritized))
+
         for priority in [Priority.INVITEE_ORDER, Priority.INVITEE_PRIORITIES]:
             n_scheduled, matching, leftovers = suggest_schedule(slots, responses, priority)
             suggested_schedule = SuggestedSchedule.objects.create(
@@ -742,33 +875,33 @@ def get_suggested_meetings(request, meeting_id):
                 priority=priority,
                 n_scheduled=n_scheduled
             )
-            for invitee in matching:
-                SuggestedTimeSlot.objects.create(
-                    meeting=suggested_schedule,
-                    time=matching[invitee],
-                    user=User.objects.get(id=invitee)
-                )
-            slots_data = [
-                {"user": invitee,
-                 "time": matching[invitee]}
-                for invitee in matching
-            ]
-            for invitee in leftovers:
-                SuggestedTimeSlot.objects.create(
-                    meeting=suggested_schedule,
-                    time=None,
-                    user=User.objects.get(id=invitee)
-                )
-            left_overs = [
-                {"user": invitee}
-                for invitee in leftovers
-            ]
-            response_data.append({
-                "priority": priority.name,
-                "n_scheduled": n_scheduled,
-                "slots": slots_data,
-                "leftovers": left_overs
-            })
+        for invitee in matching:
+            SuggestedTimeSlot.objects.create(
+                meeting=suggested_schedule,
+                time=matching[invitee],
+                user=User.objects.get(id=invitee)
+            )
+        slots_data = [
+            {"user": invitee,
+             "time": matching[invitee]}
+            for invitee in matching
+        ]
+        for invitee in leftovers:
+            SuggestedTimeSlot.objects.create(
+                meeting=suggested_schedule,
+                time=None,
+                user=User.objects.get(id=invitee)
+            )
+        left_overs = [
+            {"user": invitee}
+            for invitee in leftovers
+        ]
+        response_data = {
+            "priority": priority.name,
+            "n_scheduled": n_scheduled,
+            "slots": slots_data,
+            "leftovers": left_overs
+        }
         return Response({"suggested_meetings": response_data})
 
 @extend_schema(

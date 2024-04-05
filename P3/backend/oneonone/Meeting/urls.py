@@ -12,7 +12,8 @@ from .views import (PendingMeetingList,
                     get_meeting_participants,
                     get_participant_response,
                     post_finalized_meetings,
-                    get_suggested_meetings,
+                    get_suggested_meetings_order,
+                    get_suggested_meetings_priority,
                     delete_pending_meeting,
                     notify_not_responded_invitees,
                     send_email_view,
@@ -44,7 +45,8 @@ urlpatterns = [
     path('finalized-meeting/create/', post_finalized_meetings, name='post_finalized_meetings'),
 
 
-    path('suggested-meeting/list/<int:meeting_id>/', get_suggested_meetings, name='get_suggested_meetings'),
+    path('suggested-meeting/get-order/<int:meeting_id>/', get_suggested_meetings_order, name='get_suggested_meetings_order'),
+    path('suggested-meeting/get-priority/<int:meeting_id>/', get_suggested_meetings_priority, name='get_suggested_meetings_priority'),
 
     path('send-email/', send_email_view, name='send-email'),
     path('pending-meeting/participant-meetings/', list_participant_meetings, name='list-participant-meetings'),
