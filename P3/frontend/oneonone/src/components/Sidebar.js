@@ -25,7 +25,7 @@ const Sidebar = () => {
             }
         };
         fetchProfile().then(r => console.log("Profile fetched"));
-    }, []);
+    }, [navigate, user]);
 
     const location = useLocation();
     const isActive = (path) => location.pathname === path;
