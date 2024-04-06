@@ -16,7 +16,7 @@ from .views import (PendingMeetingList,
                     get_suggested_meetings_priority,
                     delete_pending_meeting,
                     notify_not_responded_invitees,
-                    send_email_view,
+                    create_meeting_notify,
                     list_participant_meetings)
 
 urlpatterns = [
@@ -48,6 +48,6 @@ urlpatterns = [
     path('suggested-meeting/get-order/<int:meeting_id>/', get_suggested_meetings_order, name='get_suggested_meetings_order'),
     path('suggested-meeting/get-priority/<int:meeting_id>/', get_suggested_meetings_priority, name='get_suggested_meetings_priority'),
 
-    path('send-email/', send_email_view, name='send-email'),
+    path('create-meeting-notify/', create_meeting_notify, name='send-email'),
     path('pending-meeting/participant-meetings/', list_participant_meetings, name='list-participant-meetings'),
 ]

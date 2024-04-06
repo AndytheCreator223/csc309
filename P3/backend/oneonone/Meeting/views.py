@@ -44,6 +44,55 @@ def send_email(subject, message, recipient_list, reply_to):
         count = 0
     return count
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_meeting_notify(request):
+    meeting_id = request.data.get('meeting_id')
+    try:
+        meeting = PendingMeeting.objects.get(pk=meeting_id)
+    except PendingMeeting.DoesNotExist:
+        return Response({"error": "PendingMeeting not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.user != meeting.owner:
+        return Response({"error": "You do not have permission to notify this meeting's invitees."},
+                        status=status.HTTP_403_FORBIDDEN)
+        
+    participants = Participant.objects.filter(meeting=meeting).exclude(user=meeting.owner)
+
+    subject = f"Meeting Invitation"
+    reply_to = meeting.owner.email  # Assuming the meeting owner's email is the one to reply to
+
+    show_time = meeting.deadline - timedelta(minutes=30)
+    expire_time = meeting.deadline
+
+    email_sent = 0
+    for participant in participants:
+        Notification.objects.create(
+            owner=participant.user,
+            title="Meeting Scheduling Deadline Approaching",
+            content=f"The deadline to schedule your meeting titled '{meeting.title}' is approaching. Please finalize your meeting times.\n"
+                    f"Link: http://localhost:3000/invited-meeting/{meeting_id}/{participant.user.pk}",
+            show_time=show_time,
+            expire_time=expire_time,
+            is_seen=False
+        )
+
+        message = (f"{meeting.owner.first_name} {meeting.owner.last_name} invited you to a meeting. "
+                   f"Please log in to view the details and provide your availability.\n"
+                   f"Meeting Title: {meeting.title} \n"
+                   f"Meeting Duration: {meeting.time_limit} \n"
+                   f"Scheduling Deadline: {meeting.deadline.strftime('%Y-%m-%d %H:%M:%S')} \n"
+                   f"Meeting Message: {meeting.message} \n"
+                   f"Link: http://localhost:3000/invited-meeting/{meeting_id}/{participant.user.pk}"
+                   )
+        email_sent += send_email(subject, message, [participant.user.email], [reply_to])
+    
+    if email_sent > 0:
+        email_message = f"{email_sent} emails are sent successfully."
+    else:
+        email_message = "No email sent."
+
+    return Response({"message": email_message}, status=status.HTTP_201_CREATED)
 
 class PendingMeetingList(APIView):
     permission_classes = [IsAuthenticated]
@@ -292,7 +341,6 @@ def get_pending_meeting(request, meeting_id):
             permission = True
         if not permission:
             participants_users = User.objects.filter(participant__meeting_id=meeting_id)
-            print(participants_users)
             for user in participants_users:
                 if request.user == user:
                     permission = True
@@ -502,7 +550,7 @@ def notify_not_responded_invitees(request):
     if email_sent > 0:
         email_message = f"{email_sent} emails are sent successfully."
     else:
-        email_message = "Failed to send email."
+        email_message = "No email sent."
 
     return Response({"message": "Successfully notify invitees that did no respond. " + email_message}, status=status.HTTP_201_CREATED)
 
@@ -572,8 +620,6 @@ def post_finalized_meetings(request):
         participant_time_slots = [dt[0].strftime('%Y-%m-%d %H:%M:%S') for dt in participant_time_slots]
 
         if slot["time"] not in owner_time_slots or slot["time"] not in participant_time_slots:
-            print(owner_time_slots)
-            print(participant_time_slots)
             return Response({"error": f"Participant {slot['user']}'s time was not an available time slot."},
                             status=status.HTTP_403_FORBIDDEN)
 
@@ -647,7 +693,7 @@ def post_finalized_meetings(request):
     if email_sent > 0:
         email_message = f"{email_sent} emails are sent successfully."
     else:
-        email_message = "Failed to send email."
+        email_message = "No email sent."
 
     meeting.delete()
 
@@ -918,51 +964,6 @@ def get_suggested_meetings_priority(request, meeting_id):
             "leftovers": left_overs
         }
         return Response({"suggested_meetings": response_data})
-
-@extend_schema(
-    summary="Send Email",
-    description="Send a email to recipient",
-    request={
-        "application/json": {
-            "example": {
-                "subject": "Subject of the email",
-                "content": "Content of the email",
-                "recipient_email": "recipient@example.com",
-                "sender_email": "sender@example.com",
-            }
-        }
-    },
-    responses={
-        200: inline_serializer(
-            name='Message',
-            fields={
-                'message': serializers.CharField(),
-            }
-        ),
-    }
-)
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])  # Adjust or remove based on your authentication needs
-def send_email_view(request):
-    # Extract email data from the request
-    subject = request.data.get('subject')
-    message = request.data.get('content')  # Use 'message' or 'content' based on your front-end
-    recipient_email = request.data.get('recipient_email')
-    reply_to = [request.data.get('reply_to', 'no-reply309@outlook.com')]
-
-    # Ensure all required fields are provided
-    if not all([subject, message, recipient_email]):
-        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Send the email
-    recipient_list = [recipient_email]  # EmailMessage expects a list of recipients
-    count = send_email(subject, message, recipient_list, reply_to)
-
-    if count:
-        return Response({'message': 'Email sent successfully.'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'Failed to send email.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
