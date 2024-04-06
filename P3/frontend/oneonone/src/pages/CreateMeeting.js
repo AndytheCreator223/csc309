@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import SelectCalendar from '../components/SelectCalendar';
-import { MeetingProvider } from '../contexts/MeetingContext';
+import { MeetingContext, MeetingProvider } from '../contexts/MeetingContext';
 import { Link } from 'react-router-dom';
+import { DayPilot } from "@daypilot/daypilot-lite-react";
 import axios from "axios";
 
 const CreateMeeting = () => {
@@ -16,6 +17,11 @@ const CreateMeeting = () => {
     const [selectedContacts, setSelectedContacts] = useState([]);
     const [groups, setGroups] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
+    const { selectedSlots, setSelectedSlots } = useContext(MeetingContext);
+
+    useEffect(() => {
+        console.log("Selected Slots:", selectedSlots);
+    }, [selectedSlots]);
 
     useEffect(() => {
         const fetchContacts = async () => {
@@ -90,6 +96,28 @@ const CreateMeeting = () => {
             console.error('Failed to add one or more participants:', error);
             handleError(`Failed to add one or more participants: ${error.response?.data.detail || 'Unknown error'}`);
         }
+    };
+
+    const postTimeSlots = async (meetingId) => {
+        const promises = selectedSlots.map(async slot => {
+            const start = new DayPilot.Date(slot.start);
+            const end = new DayPilot.Date(slot.end);
+            let current = start;
+
+            while (current < end) {
+                const priority = slot.priority === "High" ? 1 : 0;
+                await axios.post('http://127.0.0.1:8000/api/meeting/time-slots/create/', {
+                    meeting: meetingId,
+                    start_time: current.toString(),
+                    priority: priority,
+                }, {
+                    headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+                });
+                current = current.addMinutes(30); // Move to the next slot
+            }
+        });
+
+        await Promise.all(promises);
     };
 
     const handleAddContact = () => {
@@ -182,6 +210,7 @@ const CreateMeeting = () => {
                 const meetingId = response.data.id; // Assuming the response includes the meeting ID
                 const participants = selectedContacts.map(contact => contact.contact_user_id); // Adjusted to match your data structure
                 await addParticipantsToMeeting(meetingId, participants);
+                await postTimeSlots(meetingId);
                 await notifyParticipantsByEmail(meetingId);
             }
 
@@ -208,7 +237,6 @@ const CreateMeeting = () => {
     };
 
     return (
-        <MeetingProvider>
             <div className="container-fluid main-content" style={{ minHeight: '100vh' }}>
                 <div className="row">
                     <div className="col-md-8 mt-4">
@@ -225,19 +253,26 @@ const CreateMeeting = () => {
                     <div className="col-md-4">
                         <form onSubmit={handleSubmit}>
                             {error && <div className="alert alert-danger">{error}</div>}
-                            <div className="appointment-summary" style={{ marginBottom: "10px" }}>
+                            <div className="appointment-summary" style={{marginBottom: "10px"}}>
                                 <h3>Appointment summary</h3>
-                                <label htmlFor="title" className="label-frame label-frame-yellow form-label">Title:</label>
-                                <input type="text" id="title" className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                                <label htmlFor="title"
+                                       className="label-frame label-frame-yellow form-label">Title:</label>
+                                <input type="text" id="title" className="form-control" value={title}
+                                       onChange={(e) => setTitle(e.target.value)} required/>
                             </div>
-                            <div className="deadline-request" style={{ marginBottom: "10px" }}>
-                                <label htmlFor="deadline" className="label-frame label-frame-purple form-label"> Deadline:</label>
-                                <input type="datetime-local" id="deadline" className="form-control" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+                            <div className="deadline-request" style={{marginBottom: "10px"}}>
+                                <label htmlFor="deadline"
+                                       className="label-frame label-frame-purple form-label"> Deadline:</label>
+                                <input type="datetime-local" id="deadline" className="form-control" value={deadline}
+                                       onChange={(e) => setDeadline(e.target.value)} required/>
                             </div>
-                            <div className="appointment-length" style={{ marginBottom: "10px" }}>
-                                <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment length:</label>
+                            <div className="appointment-length" style={{marginBottom: "10px"}}>
+                                <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment
+                                    length:</label>
                                 <div>
-                                    <select className="form-control" style={{ marginBottom: "10px" }} onChange={handleTimeLimitChange} value={isCustomTime ? "Custom" : timeLimit}>
+                                    <select className="form-control" style={{marginBottom: "10px"}}
+                                            onChange={handleTimeLimitChange}
+                                            value={isCustomTime ? "Custom" : timeLimit}>
                                         <option value="" disabled>Select your option</option>
                                         <option value="30">30 minutes</option>
                                         <option value="60">1 hour</option>
@@ -260,67 +295,93 @@ const CreateMeeting = () => {
                             <div className="form-group">
                                 <label htmlFor="contacts-dropdown">Select Contact</label>
                                 <select
-                                  className="form-control"
-                                  id="contacts-dropdown"
-                                  value={selectedContact}
-                                  onChange={(e) => setSelectedContact(e.target.value)}
+                                    className="form-control"
+                                    id="contacts-dropdown"
+                                    value={selectedContact}
+                                    onChange={(e) => setSelectedContact(e.target.value)}
                                 >
-                                  <option value="">Choose...</option>
-                                  {contacts.map((contact) => (
-                                    <option key={contact.id} value={contact.id}>
-                                      {contact.contact_username}
-                                    </option>
-                                  ))}
+                                    <option value="">Choose...</option>
+                                    {contacts.map((contact) => (
+                                        <option key={contact.id} value={contact.id}>
+                                            {contact.contact_username}
+                                        </option>
+                                    ))}
                                 </select>
-                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add</button>
+                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add
+                                </button>
                             </div>
                             {/* Group selection dropdown */}
                             <div className="form-group">
                                 <label htmlFor="groups-dropdown">Select Group</label>
                                 <select
-                                  className="form-control"
-                                  id="groups-dropdown"
-                                  value={selectedGroup}
-                                  onChange={handleGroupSelection}
+                                    className="form-control"
+                                    id="groups-dropdown"
+                                    value={selectedGroup}
+                                    onChange={handleGroupSelection}
                                 >
-                                  <option value="">Choose...</option>
-                                  {groups.map((group) => (
-                                    <option key={group.id} value={group.id}>
-                                      {group.name}
-                                    </option>
-                                  ))}
+                                    <option value="">Choose...</option>
+                                    {groups.map((group) => (
+                                        <option key={group.id} value={group.id}>
+                                            {group.name}
+                                        </option>
+                                    ))}
                                 </select>
-                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddGroupMembers}>Add</button>
+                                <button type="button" className="btn btn-primary mt-2"
+                                        onClick={handleAddGroupMembers}>Add
+                                </button>
                             </div>
                             <div className="mt-3">
-                              <h5>Selected Contacts:</h5>
-                              {selectedContacts.length > 0 ? (
-                                <ul className="list-group">
-                                  {selectedContacts.map((contact) => (
-                                    <li key={contact.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                      {contact.contact_username}
-                                      <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveContact(contact.id)}>
-                                        Remove
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <p className="text-muted">No contacts selected.</p>
-                              )}
+                                <h5>Selected Contacts:</h5>
+                                {selectedContacts.length > 0 ? (
+                                    <ul className="list-group">
+                                        {selectedContacts.map((contact) => (
+                                            <li key={contact.id}
+                                                className="list-group-item d-flex justify-content-between align-items-center">
+                                                {contact.contact_username}
+                                                <button type="button" className="btn btn-outline-danger btn-sm"
+                                                        onClick={() => handleRemoveContact(contact.id)}>
+                                                    Remove
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-muted">No contacts selected.</p>
+                                )}
                             </div>
-                            <div className="message-for-contact" style={{ marginTop: "15px", marginBottom: "15px" }}>
-                                <label htmlFor="message" className="label-frame label-frame-pink form-label">Message:</label>
-                                <textarea className="form-control" id="message" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter your message here..."></textarea>
+
+                            <div className="mt-3">
+                                <h5>Selected Slots:</h5>
+                                {selectedSlots.length > 0 ? (
+                                    <ul className="list-group">
+                                        {selectedSlots.map((slot, index) => (
+                                            <li key={index}
+                                                className="list-group-item d-flex justify-content-between align-items-center">
+                                                {`${new DayPilot.Date(slot.start).toString("M/d/yyyy H:mm")} - ${new DayPilot.Date(slot.end).toString("M/d/yyyy H:mm")}`}
+                                                <span className="badge bg-primary rounded-pill">{slot.priority}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-muted">No slots selected.</p>
+                                )}
+                            </div>
+
+                            <div className="message-for-contact" style={{marginTop: "15px", marginBottom: "15px"}}>
+                                <label htmlFor="message"
+                                       className="label-frame label-frame-pink form-label">Message:</label>
+                                <textarea className="form-control" id="message" rows="5" value={message}
+                                          onChange={(e) => setMessage(e.target.value)}
+                                          placeholder="Enter your message here..."></textarea>
                             </div>
                             <div className="final-confirmation">
-                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit</button>
+                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-        </MeetingProvider>
     );
 };
 
