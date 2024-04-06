@@ -118,7 +118,7 @@ const ChangeMeeting = () => {
                                 <p className="bg-light p-2 rounded">{meetingDetails?.message || 'No additional message provided.'}</p>
                             </div>
                             <div className="participant-list mb-3">
-                                <h3>Participants</h3>
+                                <h5>Participants</h5>
                                 <ul className="list-group">
                                     {participants.map((participant) => (
                                         <li key={participant.id} className="list-group-item">
