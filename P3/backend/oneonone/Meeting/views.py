@@ -69,7 +69,7 @@ def create_meeting_notify(request):
     for participant in participants:
         Notification.objects.create(
             owner=participant.user,
-            title="Meeting Scheduling Deadline Approaching",
+            title="Scheduling Reminder: {meeting.title}",
             content=f"The deadline to schedule your meeting titled '{meeting.title}' is approaching. Please finalize your meeting times.\n"
                     f"Link: http://localhost:3000/invited-meeting/{meeting.pk}",
             show_time=show_time,

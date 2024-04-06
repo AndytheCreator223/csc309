@@ -118,7 +118,7 @@ const FinalizeMeeting = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-         window.location.href = '/meetings';
+        window.location.href = '/meetings';
     };
 
    return (
