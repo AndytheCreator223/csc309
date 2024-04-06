@@ -101,6 +101,12 @@ const InvitedCalendar = ({ meetingId }) => {
             return;
         }
 
+        const overlapSelected = selectedSlots.some(slot => args.start < new DayPilot.Date(slot.end) && args.end > new DayPilot.Date(slot.start));
+        if (overlapSelected) {
+            alert("Selected slot overlaps with another selected slot.");
+            return;
+        }
+
         const form = [
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select"}
         ];
@@ -124,6 +130,46 @@ const InvitedCalendar = ({ meetingId }) => {
         setSelectedSlots(prev => [...prev, newSlot]);
     };
 
+    const handleEventClick = async (args) => {
+        if (args.e.data.readOnly) {
+            alert("Cannot edit finalized meeting");
+            return;
+        }
+
+        const e = args.e;
+        const form = [
+            {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select", value: e.data.priority}
+        ];
+        const modal = await DayPilot.Modal.form(form);
+
+        if (!modal.result) {
+            return;
+        }
+
+        const prioritySelected = modal.result.priority ? modal.result.priority : "High";
+
+        const updatedSlots = selectedSlots.map(slot => {
+            if (slot.id === e.data.id) {
+                return {...slot,
+                    priority: prioritySelected,
+                    backColor: prioritySelected === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)"};
+            }
+            return slot;
+        });
+
+        setSelectedSlots(updatedSlots);
+    };
+
+    const handleEventDelete = async (args) => {
+        if (args.e.data.readOnly) {
+            alert("Cannot delete finalized meeting");
+            return;
+        }
+        const dp = calendarRef.current.control;
+        dp.events.remove(args.e);
+        setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
+    }
+
     const calendarConfig = {
         viewType: "Week",
         durationBarVisible: true,
@@ -131,6 +177,9 @@ const InvitedCalendar = ({ meetingId }) => {
         onTimeRangeSelected: handleTimeRangeSelected,
         eventMoveHandling: "Disabled",
         eventResizeHandling: "Disabled",
+        onEventClick: handleEventClick,
+        eventDeleteHandling: "Enabled",
+        onEventDelete: handleEventDelete,
         onBeforeCellRender: args => {
             timeSlots.forEach(slot => {
                 const slotStart = new DayPilot.Date(slot.start_time);
