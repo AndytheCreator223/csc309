@@ -94,6 +94,44 @@ def create_meeting_notify(request):
 
     return Response({"message": email_message}, status=status.HTTP_201_CREATED)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_meeting_notify(request):
+    meeting_id = request.data.get('meeting_id')
+    try:
+        meeting = PendingMeeting.objects.get(pk=meeting_id)
+    except PendingMeeting.DoesNotExist:
+        return Response({"error": "PendingMeeting not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.user != meeting.owner:
+        return Response({"error": "You do not have permission to notify this meeting's invitees."},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    participants = Participant.objects.filter(meeting=meeting).exclude(user=meeting.owner)
+
+    subject = f"Meeting Rescheduling"
+    reply_to = meeting.owner.email  # Assuming the meeting owner's email is the one to reply to
+
+    email_sent = 0
+    for participant in participants:
+        message = (f"{meeting.owner.first_name} {meeting.owner.last_name} rescheduled time for a meeting. "
+                   f"Please log in to view the details and provide your availability.\n"
+                   f"Meeting Title: {meeting.title} \n"
+                   f"Meeting Duration: {meeting.time_limit} \n"
+                   f"Scheduling Deadline: {meeting.deadline.strftime('%Y-%m-%d %H:%M:%S')} \n"
+                   f"Meeting Message: {meeting.message} \n"
+                   f"Link: http://localhost:3000/invited-meeting/{meeting.pk}"
+                   )
+        email_sent += send_email(subject, message, [participant.user.email], [reply_to])
+
+    if email_sent > 0:
+        email_message = f"{email_sent} emails are sent successfully."
+    else:
+        email_message = "No email sent."
+
+    return Response({"message": email_message}, status=status.HTTP_201_CREATED)
+
 class PendingMeetingList(APIView):
     permission_classes = [IsAuthenticated]
 
