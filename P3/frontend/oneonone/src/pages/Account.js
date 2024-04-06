@@ -96,7 +96,7 @@ const AccountUpdate = () => {
       <div className="row">
         <Sidebar />
         <div className="col-md-10 main-content">
-          <div className="container h-100">
+          <div className="container h-100 main-content">
             <div className="row justify-content-center h-100">
               <div className="col-12 col-md-8 col-lg-6 main-content">
                 <div className="account">
