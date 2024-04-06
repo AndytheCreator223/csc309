@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import SelectCalendar from '../components/SelectCalendar';
-import { MeetingContext, MeetingProvider } from '../contexts/MeetingContext';
+import { MeetingContext } from '../contexts/MeetingContext';
 import { Link } from 'react-router-dom';
 import { DayPilot } from "@daypilot/daypilot-lite-react";
 import axios from "axios";
@@ -17,7 +17,7 @@ const CreateMeeting = () => {
     const [selectedContacts, setSelectedContacts] = useState([]);
     const [groups, setGroups] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
-    const { selectedSlots, setSelectedSlots } = useContext(MeetingContext);
+    const { selectedSlots } = useContext(MeetingContext);
 
     useEffect(() => {
         console.log("Selected Slots:", selectedSlots);
