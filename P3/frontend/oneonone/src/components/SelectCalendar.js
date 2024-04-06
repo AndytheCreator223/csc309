@@ -63,6 +63,12 @@ const SelectCalendar = () => {
         const dp = calendarRef.current.control;
         dp.clearSelection();
 
+        const overlap = events.some(event => args.start < new DayPilot.Date(event.end) && args.end > new DayPilot.Date(event.start));
+        if (overlap) {
+            alert("Selected slot overlaps with an existing meeting");
+            return;
+        }
+
         const form = [
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select"}
         ];
@@ -82,6 +88,11 @@ const SelectCalendar = () => {
     };
 
     const handleEventClick = async (args) => {
+        if (args.e.data.readOnly) {
+            alert("Cannot edit finalized meeting");
+            return;
+        }
+
         const dp = calendarRef.current.control;
         const e = args.e;
         const form = [
@@ -100,18 +111,26 @@ const SelectCalendar = () => {
         setSelectedSlots(updatedSlots);
     };
 
+    const handleEventDelete = async (args) => {
+        if (args.e.data.readOnly) {
+            alert("Cannot delete finalized meeting");
+            return;
+        }
+        const dp = calendarRef.current.control;
+        dp.events.remove(args.e);
+        setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
+    }
+
     const calendarConfig = {
         viewType: "Week",
         durationBarVisible: true,
         timeRangeSelectedHandling: "Enabled",
         onTimeRangeSelected: handleTimeRangeSelected,
+        eventMoveHandling: "Disabled",
+        eventResizeHandling: "Disabled",
         onEventClick: handleEventClick,
         eventDeleteHandling: "Enabled",
-        onEventDelete: args => {
-            const dp = calendarRef.current.control;
-            dp.events.remove(args.e);
-            setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
-        },
+        onEventDelete: handleEventDelete,
         startDate: new DayPilot.Date().firstDayOfWeek(),
         contextMenu: new DayPilot.Menu({
             items: [
