@@ -69,7 +69,7 @@ def create_meeting_notify(request):
     for participant in participants:
         Notification.objects.create(
             owner=participant.user,
-            title="Meeting Scheduling Deadline Approaching",
+            title="Scheduling Reminder: {meeting.title}",
             content=f"The deadline to schedule your meeting titled '{meeting.title}' is approaching. Please finalize your meeting times.\n"
                     f"Link: http://localhost:3000/invited-meeting/{meeting.pk}",
             show_time=show_time,
@@ -790,6 +790,7 @@ def get_suggested_meetings_order(request, meeting_id):
         return Response({"error": "Meeting not found"}, status=status.HTTP_404_NOT_FOUND)
 
     suggested_schedules = SuggestedSchedule.objects.filter(meeting_id=meeting_id)
+
     if len(suggested_schedules) != 0:
         for schedule in suggested_schedules:
             if schedule.priority == Priority.INVITEE_ORDER:
@@ -826,6 +827,7 @@ def get_suggested_meetings_order(request, meeting_id):
                 (slot.start_time.strftime("%Y-%m-%d %H:%M:%S"), slot.priority)
                 for slot in time_slots
             ]
+
             for time, priority in time_slots:
                 index = next((index for index, (first, _) in enumerate(slots) if first == time), None)
                 if index is None:
