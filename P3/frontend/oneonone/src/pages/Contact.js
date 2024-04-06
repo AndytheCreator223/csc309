@@ -300,6 +300,7 @@ const Contacts = () => {
         config
       );
       fetchContacts();
+      fetchGroups();
     } catch (err) {
       let errorMessage = "Failed to delete contact."; // Default error message
       if (err.response && err.response.data) {

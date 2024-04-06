@@ -166,15 +166,21 @@ def add_contact_view(request):
 def delete_contact_view(request, username):
     # Retrieve the contact_user by username
     contact_user = get_object_or_404(User, username=username)
-    
+
     # Try to get the contact instance where the contact_user is the contact
     try:
         contact = Contacts.objects.get(owner=request.user, contact=contact_user)
     except Contacts.DoesNotExist:
         return Response({'detail': 'Contact not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    # Before deleting the contact, remove the user from all groups owned by the request.user
+    owned_groups = Group.objects.filter(owner=request.user)
+    for group in owned_groups:
+        group.members.remove(contact_user)  # This will remove the user from the group's members
+
     # Delete the contact
     contact.delete()
+
     return Response({'detail': 'Contact deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
 ####################################################################################################################################################################################
