@@ -38,7 +38,7 @@ urlpatterns = [
 
     path('participant/create/', ParticipantCreateView.as_view(), name='create-participant'),
     path('participant/delete/<int:meeting_id>/<int:user_id>/', ParticipantDeleteView.as_view(), name='delete-participant'),
-    path('participant/update/<int:meeting_id>/<int:user_id>/', ParticipantUpdateView.as_view(), name='update-participant'),
+    path('participant/update/<int:meeting_id>/', ParticipantUpdateView.as_view(), name='update-participant'),
 
 
     path('finalized-meeting/list/', FinalizedMeetingList.as_view(), name='finalized-meetings'),

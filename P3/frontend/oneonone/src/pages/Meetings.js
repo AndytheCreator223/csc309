@@ -101,8 +101,8 @@ const Meetings = () => {
                                                 </div>
                                             </>
                                         )}
-                                        {viewType === 'participated' && new Date(meeting.deadline) < new Date() && (
-                                            <Link to={`/respond/${meeting.id}`} className="btn btn-primary" style={{ height: '3em', alignSelf: 'center' }}>Respond</Link>
+                                        {viewType === 'participated' && new Date(meeting.deadline) > new Date() && (
+                                            <Link to={`/invited-meeting/${meeting.id}`} className="btn btn-primary" style={{ height: '3em', alignSelf: 'center' }}>Respond</Link>
                                         )}
                                         {viewType === 'owned' && (
                                             new Date(meeting.deadline) < new Date() ? (

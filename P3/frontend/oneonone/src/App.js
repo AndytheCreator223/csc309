@@ -26,7 +26,7 @@ function App() {
         <Route path="/notifications" element={<Notification />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/create-meeting" element={<CreateMeeting />} />
-        <Route path="/invited-meeting/:meeting_id/:user_id" element={<InvitedMeeting />} />
+        <Route path="/invited-meeting/:meeting_id/" element={<InvitedMeeting />} />
       </Routes>
     </Router>
         </MeetingProvider>
