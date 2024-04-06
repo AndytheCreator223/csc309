@@ -10,9 +10,11 @@ import Notification from "./pages/Notification";
 import Contacts from "./pages/Contact";
 import CreateMeeting from "./pages/CreateMeeting";
 import "./style.css";
+import {MeetingProvider} from "./contexts/MeetingContext";
 
 function App() {
   return (
+      <MeetingProvider>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -25,6 +27,7 @@ function App() {
         <Route path="/create-meeting" element={<CreateMeeting />} />
       </Routes>
     </Router>
+        </MeetingProvider>
   );
 }
 

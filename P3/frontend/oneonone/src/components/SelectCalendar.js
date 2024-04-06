@@ -39,6 +39,7 @@ const SelectCalendar = () => {
                         start: start.toString(),
                         end: end.toString(),
                         backgroundColor: "#AAAAAA",
+                        readOnly: true,
                     };
                 });
                 setEvents(events);
@@ -137,7 +138,7 @@ const SelectCalendar = () => {
                 />
             </div>
             <div style={styles.main}>
-                <DayPilotCalendar {...calendarConfig} ref={calendarRef} />
+                <DayPilotCalendar {...calendarConfig} ref={calendarRef}/>
             </div>
         </div>
     );
