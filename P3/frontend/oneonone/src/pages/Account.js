@@ -100,7 +100,7 @@ const AccountUpdate = () => {
             <div className="row justify-content-center h-100">
               <div className="col-12 col-md-8 col-lg-6 main-content">
                 <div className="account">
-                  <form onSubmit={handleUpdate} enctype="multipart/form-data">
+                  <form onSubmit={handleUpdate} enctype="multipart/form-data" className="main-content">
                     <div className="form-group-pic text-center">
                       <img src={profilePic} alt="Profile" width="100" height="100" className="profile-pic" />
                     </div>
