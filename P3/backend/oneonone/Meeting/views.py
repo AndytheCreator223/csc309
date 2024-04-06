@@ -174,6 +174,9 @@ class PendingMeetingCreateView(APIView):
             else:
                 meeting.delete()
                 return Response(participant_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class PendingMeetingUpdateView(APIView):

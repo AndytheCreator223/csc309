@@ -11,6 +11,7 @@ import Contacts from "./pages/Contact";
 import CreateMeeting from "./pages/CreateMeeting";
 import InvitedMeeting from "./pages/InvitedMeeting";
 import ChangeMeeting from "./pages/ChangeMeeting"
+import FinalizeMeeting from "./pages/FinalizeMeeting"
 import "./style.css";
 import {MeetingProvider} from "./contexts/MeetingContext";
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/create-meeting" element={<CreateMeeting />} />
         <Route path="/invited-meeting/:meeting_id/" element={<InvitedMeeting />} />
         <Route path="/change-meeting/:meeting_id/" element={<ChangeMeeting />} />
+        <Route path="/finalize-meeting/:meeting_id/" element={<FinalizeMeeting />} />
       </Routes>
     </Router>
         </MeetingProvider>
