@@ -437,7 +437,7 @@ def get_meeting_participants(request, meeting_id):
         if request.user != meeting.owner:
             return Response({"error": "You do not have permission to view this meeting."},
                             status=status.HTTP_403_FORBIDDEN)
-        participants = Participant.objects.filter(meeting=meeting).select_related('user').order_by('-response')
+        participants = Participant.objects.filter(meeting=meeting).exclude(user=meeting.owner).select_related('user').order_by('-response')
         participants_info = [
             {
                 "first_name": participant.user.first_name,

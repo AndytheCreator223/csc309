@@ -8,6 +8,7 @@ const ChangeMeeting = () => {
     const { meeting_id} = useParams();
     const [meetingDetails, setMeetingDetails] = useState(null);
     const [error, setError] = useState('');
+    const [participants, setParticipants] = useState([]);
 
     useEffect(() => {
         const fetchMeetingDetails = async () => {
@@ -28,11 +29,31 @@ const ChangeMeeting = () => {
             }
         };
 
+        const fetchParticipants = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get(
+                    `http://127.0.0.1:8000/api/meeting/participant/list/${meeting_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setParticipants(response.data.participants);
+            } catch (error) {
+                console.error('Failed to fetch participants:', error);
+                setError("Failed to load participants.");
+            }
+        };
+
         fetchMeetingDetails();
+        fetchParticipants();
     }, [meeting_id]);
 
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         window.location.href = '/meetings';
     };
 
@@ -81,6 +102,16 @@ const ChangeMeeting = () => {
                             <div className="meeting-message-display mb-3">
                                 <label className="label-frame label-frame-pink form-label">Meeting Message:</label>
                                 <p className="bg-light p-2 rounded">{meetingDetails?.message || 'No additional message provided.'}</p>
+                            </div>
+                            <div className="participant-list mb-3">
+                                <h3>Participants</h3>
+                                <ul className="list-group">
+                                    {participants.map((participant) => (
+                                        <li key={participant.id} className="list-group-item">
+                                            {participant.first_name} {participant.last_name} - {participant.response ? 'Responded' : 'Not Responded'}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                         <form onSubmit={handleSubmit}>

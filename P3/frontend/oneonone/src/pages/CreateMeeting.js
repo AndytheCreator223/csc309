@@ -72,7 +72,7 @@ const CreateMeeting = () => {
             );
             const message = response.data.message;
             alert('Meeting successfully created. ' + message);
-            // window.location.href = '/meetings';
+            window.location.href = '/meetings';
         } catch (error) {
             console.error('Failed to notify invitees:', error);
             handleError('Failed to notify invitees');

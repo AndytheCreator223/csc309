@@ -168,7 +168,6 @@ class ParticipantUpdateSerializer(serializers.ModelSerializer):
 
         # Check if the request user is the participant (user_id on the instance)
         if request_user != participant_user:
-            print("selva")
             raise serializers.ValidationError("The request user must be the participant being updated.")
 
         return data
