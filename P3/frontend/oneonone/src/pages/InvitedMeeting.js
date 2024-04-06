@@ -139,7 +139,7 @@ const InvitedMeeting = () => {
                 <div className="row">
                     <div className="col-md-8">
                         <div className="datetime-selection">
-                            <h2 className="big-title">Meeting Details</h2>
+                            <h2 className="big-title">Meeting Details</h2> <p>Red Time Slots: High Priority; Purple Time Slots: Low Priority</p>
                             <InvitedCalendar meetingId={meeting_id} />
                         </div>
                     </div>
