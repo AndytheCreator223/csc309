@@ -23,6 +23,7 @@ class ParticipantCreateSerializer(serializers.ModelSerializer):
         fields = ['meeting', 'user', 'content']
 
     def validate(self, data):
+        print(data)
         # Check if the provided user is a contact of the current request user
         request_user = self.context['request'].user
         user_id = data['user']
@@ -32,7 +33,7 @@ class ParticipantCreateSerializer(serializers.ModelSerializer):
         if meeting.owner != request_user:
             raise serializers.ValidationError("Only the meeting owner can add participants.")
 
-        if not Contacts.objects.filter(owner=request_user, contact_id=user_id).exists():
+        if user_id.id != meeting.owner_id and not Contacts.objects.filter(owner=request_user, contact_id=user_id).exists():
             raise serializers.ValidationError("The provided user is not a contact of the current user.")
 
         # Check for duplicates
@@ -62,7 +63,7 @@ class PendingMeetingSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.ListField(child=ParticipantSerializer()))
     def get_participants(self, obj):
-        participants = Participant.objects.filter(meeting=obj)
+        participants = Participant.objects.filter(meeting=obj).exclude(user=obj.owner)
         return ParticipantSerializer(participants, many=True).data
 
 class CustomPendingMeetingSerializer(serializers.ModelSerializer):

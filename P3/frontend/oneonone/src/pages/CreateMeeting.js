@@ -218,7 +218,7 @@ const CreateMeeting = () => {
                                 <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment length:</label>
                                 <div>
                                     <select className="form-control" style={{ marginBottom: "10px" }} onChange={handleTimeLimitChange} value={isCustomTime ? "Custom" : timeLimit}>
-                                        <option value="" disabled selected>Select your option</option>
+                                        <option value="" disabled>Select your option</option>
                                         <option value="30">30 minutes</option>
                                         <option value="60">1 hour</option>
                                         <option value="90">1 hour 30 minutes</option>
@@ -239,26 +239,36 @@ const CreateMeeting = () => {
                             {/* Contacts selection dropdown */}
                             <div className="form-group">
                                 <label htmlFor="contacts-dropdown">Select Contact</label>
-                                <select className="form-control" id="contacts-dropdown" value={selectedContact} onChange={(e) => setSelectedContact(e.target.value)}>
-                                    <option value="">Choose...</option>
-                                      {contacts.map((contact) => (
-                                          <option key={contact.id} value={contact.id}>
-                                            {contact.contact_username}
-                                          </option>
-                                      ))}
+                                <select
+                                  className="form-control"
+                                  id="contacts-dropdown"
+                                  value={selectedContact}
+                                  onChange={(e) => setSelectedContact(e.target.value)}
+                                >
+                                  <option value="">Choose...</option>
+                                  {contacts.map((contact) => (
+                                    <option key={contact.id} value={contact.id}>
+                                      {contact.contact_username}
+                                    </option>
+                                  ))}
                                 </select>
                                 <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add</button>
                             </div>
                             {/* Group selection dropdown */}
                             <div className="form-group">
                                 <label htmlFor="groups-dropdown">Select Group</label>
-                                <select className="form-control" id="groups-dropdown" value={selectedGroup} onChange={handleGroupSelection}>
-                                    <option value="">Choose...</option>
-                                    {groups.map((group) => (
-                                        <option key={group.id} value={group.id}>
-                                            {group.name}
-                                        </option>
-                                    ))}
+                                <select
+                                  className="form-control"
+                                  id="groups-dropdown"
+                                  value={selectedGroup}
+                                  onChange={handleGroupSelection}
+                                >
+                                  <option value="">Choose...</option>
+                                  {groups.map((group) => (
+                                    <option key={group.id} value={group.id}>
+                                      {group.name}
+                                    </option>
+                                  ))}
                                 </select>
                                 <button type="button" className="btn btn-primary mt-2" onClick={handleAddGroupMembers}>Add</button>
                             </div>

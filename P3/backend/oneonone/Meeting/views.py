@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from rest_framework import serializers
 from django.utils import timezone
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 def send_email(subject, message, recipient_list, reply_to):
     try:
@@ -73,8 +74,19 @@ class PendingMeetingCreateView(APIView):
         serializer = PendingMeetingCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             meeting = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            participant_serializer_context = {'request': request}
+            participant_data = {
+                'meeting': meeting.id,
+                'user': meeting.owner.id,
+                'content': "",
+            }
+            participant_serializer = ParticipantCreateSerializer(data=participant_data, context=participant_serializer_context)
+            if participant_serializer.is_valid():
+                participant_serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                meeting.delete()
+                return Response(participant_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PendingMeetingUpdateView(APIView):
@@ -188,13 +200,16 @@ class ParticipantCreateView(APIView):
         responses={201: ParticipantCreateSerializer},
     )
     def post(self, request):
-        print(request.data)
         serializer = ParticipantCreateSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             participant = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        else:
+            meeting_id = request.data.get('meeting')
+            if meeting_id:
+                meeting = get_object_or_404(PendingMeeting, id=meeting_id)
+                meeting.delete()
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ParticipantDeleteView(APIView):
     permission_classes = [IsAuthenticated]
