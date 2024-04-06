@@ -63,6 +63,12 @@ const SelectCalendar = () => {
         const dp = calendarRef.current.control;
         dp.clearSelection();
 
+        const now = new DayPilot.Date();
+        if (args.start < now) {
+            alert("Cannot select a time slot in the past.");
+            return;
+        }
+
         const overlap = events.some(event => args.start < new DayPilot.Date(event.end) && args.end > new DayPilot.Date(event.start));
         if (overlap) {
             alert("Selected slot overlaps with an existing meeting");
