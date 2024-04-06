@@ -20,6 +20,7 @@ const SelectCalendar = () => {
     const calendarRef = useRef()
     const { selectedSlots, setSelectedSlots } = useContext(MeetingContext);
     const [events, setEvents] = useState([]);
+    const [startDate, setStartDate] = useState(new DayPilot.Date().firstDayOfWeek());
 
     useEffect(() => {
         const fetchFinalizedMeetings = async () => {
@@ -154,7 +155,7 @@ const SelectCalendar = () => {
         onEventClick: handleEventClick,
         eventDeleteHandling: "Enabled",
         onEventDelete: handleEventDelete,
-        startDate: new DayPilot.Date().firstDayOfWeek(),
+        startDate: startDate,
         contextMenu: new DayPilot.Menu({
             items: [
                 {text: "Delete", onClick: args => args.source.remove()},
@@ -170,12 +171,9 @@ const SelectCalendar = () => {
                     selectMode={"Week"}
                     showMonths={3}
                     skipMonths={3}
-                    startDate={new DayPilot.Date()}
-                    selectionDay={new DayPilot.Date()}
+                    startDate={startDate}
                     onTimeRangeSelected={args => {
-                        calendarRef.current.control.update({
-                            startDate: args.day,
-                        });
+                        setStartDate(args.day);
                     }}
                 />
             </div>

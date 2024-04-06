@@ -233,151 +233,151 @@ const CreateMeeting = () => {
     };
 
     return (
-            <div className="container-fluid main-content" style={{ minHeight: '100vh' }}>
-                <div className="row">
-                    <div className="col-md-8 mt-4">
-                        <Link to={`/dashboard`} className="btn btn-primary">Back to Dashboard</Link>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-md-8">
-                        <div className="datetime-selection">
-                            <h2 className="big-title">Select date(s) and time</h2>
-                            <SelectCalendar />
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <form onSubmit={handleSubmit}>
-                            {error && <div className="alert alert-danger">{error}</div>}
-                            <div className="appointment-summary" style={{marginBottom: "10px"}}>
-                                <h3>Appointment summary</h3>
-                                <label htmlFor="title"
-                                       className="label-frame label-frame-yellow form-label">Title:</label>
-                                <input type="text" id="title" className="form-control" value={title}
-                                       onChange={(e) => setTitle(e.target.value)} required/>
-                            </div>
-                            <div className="deadline-request" style={{marginBottom: "10px"}}>
-                                <label htmlFor="deadline"
-                                       className="label-frame label-frame-purple form-label"> Deadline:</label>
-                                <input type="datetime-local" id="deadline" className="form-control" value={deadline}
-                                       onChange={(e) => setDeadline(e.target.value)} required/>
-                            </div>
-                            <div className="appointment-length" style={{marginBottom: "10px"}}>
-                                <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment
-                                    length:</label>
-                                <div>
-                                    <select className="form-control" style={{marginBottom: "10px"}}
-                                            onChange={handleTimeLimitChange}
-                                            value={isCustomTime ? "Custom" : timeLimit}>
-                                        <option value="" disabled>Select your option</option>
-                                        <option value="30">30 minutes</option>
-                                        <option value="60">1 hour</option>
-                                        <option value="90">1 hour 30 minutes</option>
-                                        <option value="120">2 hours</option>
-                                        <option value="Custom">Custom</option>
-                                    </select>
-                                    {isCustomTime && (
-                                        <input
-                                            type="number"
-                                            className="form-control"
-                                            value={timeLimit}
-                                            onChange={handleCustomTimeChange}
-                                            placeholder="Time in minutes (Must be divisible by 30)"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                            {/* Contacts selection dropdown */}
-                            <div className="form-group">
-                                <label htmlFor="contacts-dropdown">Select Contact</label>
-                                <select
-                                    className="form-control"
-                                    id="contacts-dropdown"
-                                    value={selectedContact}
-                                    onChange={(e) => setSelectedContact(e.target.value)}
-                                >
-                                    <option value="">Choose...</option>
-                                    {contacts.map((contact) => (
-                                        <option key={contact.id} value={contact.id}>
-                                            {contact.contact_username}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add
-                                </button>
-                            </div>
-                            {/* Group selection dropdown */}
-                            <div className="form-group">
-                                <label htmlFor="groups-dropdown">Select Group</label>
-                                <select
-                                    className="form-control"
-                                    id="groups-dropdown"
-                                    value={selectedGroup}
-                                    onChange={handleGroupSelection}
-                                >
-                                    <option value="">Choose...</option>
-                                    {groups.map((group) => (
-                                        <option key={group.id} value={group.id}>
-                                            {group.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button type="button" className="btn btn-primary mt-2"
-                                        onClick={handleAddGroupMembers}>Add
-                                </button>
-                            </div>
-                            <div className="mt-3">
-                                <h5>Selected Contacts:</h5>
-                                {selectedContacts.length > 0 ? (
-                                    <ul className="list-group">
-                                        {selectedContacts.map((contact) => (
-                                            <li key={contact.id}
-                                                className="list-group-item d-flex justify-content-between align-items-center">
-                                                {contact.contact_username}
-                                                <button type="button" className="btn btn-outline-danger btn-sm"
-                                                        onClick={() => handleRemoveContact(contact.id)}>
-                                                    Remove
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="text-muted">No contacts selected.</p>
-                                )}
-                            </div>
-
-                            <div className="mt-3">
-                                <h5>Selected Slots:</h5>
-                                {selectedSlots.length > 0 ? (
-                                    <ul className="list-group">
-                                        {selectedSlots.map((slot, index) => (
-                                            <li key={index}
-                                                className="list-group-item d-flex justify-content-between align-items-center">
-                                                {`${new DayPilot.Date(slot.start).toString("M/d/yyyy H:mm")} - ${new DayPilot.Date(slot.end).toString("M/d/yyyy H:mm")}`}
-                                                <span className="badge bg-primary rounded-pill">{slot.priority}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="text-muted">No slots selected.</p>
-                                )}
-                            </div>
-
-                            <div className="message-for-contact" style={{marginTop: "15px", marginBottom: "15px"}}>
-                                <label htmlFor="message"
-                                       className="label-frame label-frame-pink form-label">Message:</label>
-                                <textarea className="form-control" id="message" rows="5" value={message}
-                                          onChange={(e) => setMessage(e.target.value)}
-                                          placeholder="Enter your message here..."></textarea>
-                            </div>
-                            <div className="final-confirmation">
-                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+        <div className="container-fluid main-content" style={{ minHeight: '100vh' }}>
+            <div className="row">
+                <div className="col-md-8 mt-4">
+                    <Link to={`/dashboard`} className="btn btn-primary">Back to Dashboard</Link>
                 </div>
             </div>
+            <div className="row">
+                <div className="col-md-8">
+                    <div className="datetime-selection">
+                        <h2 className="big-title">Select date(s) and time</h2>
+                        <SelectCalendar />
+                    </div>
+                </div>
+                <div className="col-md-4">
+                    <form onSubmit={handleSubmit}>
+                        {error && <div className="alert alert-danger">{error}</div>}
+                        <div className="appointment-summary" style={{marginBottom: "10px"}}>
+                            <h3>Appointment summary</h3>
+                            <label htmlFor="title"
+                                   className="label-frame label-frame-yellow form-label">Title:</label>
+                            <input type="text" id="title" className="form-control" value={title}
+                                   onChange={(e) => setTitle(e.target.value)} required/>
+                        </div>
+                        <div className="deadline-request" style={{marginBottom: "10px"}}>
+                            <label htmlFor="deadline"
+                                   className="label-frame label-frame-purple form-label"> Deadline:</label>
+                            <input type="datetime-local" id="deadline" className="form-control" value={deadline}
+                                   onChange={(e) => setDeadline(e.target.value)} required/>
+                        </div>
+                        <div className="appointment-length" style={{marginBottom: "10px"}}>
+                            <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment
+                                length:</label>
+                            <div>
+                                <select className="form-control" style={{marginBottom: "10px"}}
+                                        onChange={handleTimeLimitChange}
+                                        value={isCustomTime ? "Custom" : timeLimit}>
+                                    <option value="" disabled>Select your option</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="60">1 hour</option>
+                                    <option value="90">1 hour 30 minutes</option>
+                                    <option value="120">2 hours</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                                {isCustomTime && (
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        value={timeLimit}
+                                        onChange={handleCustomTimeChange}
+                                        placeholder="Time in minutes (Must be divisible by 30)"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                        {/* Contacts selection dropdown */}
+                        <div className="form-group">
+                            <label htmlFor="contacts-dropdown">Select Contact</label>
+                            <select
+                                className="form-control"
+                                id="contacts-dropdown"
+                                value={selectedContact}
+                                onChange={(e) => setSelectedContact(e.target.value)}
+                            >
+                                <option value="">Choose...</option>
+                                {contacts.map((contact) => (
+                                    <option key={contact.id} value={contact.id}>
+                                        {contact.contact_username}
+                                    </option>
+                                ))}
+                            </select>
+                            <button type="button" className="btn btn-primary mt-2" onClick={handleAddContact}>Add
+                            </button>
+                        </div>
+                        {/* Group selection dropdown */}
+                        <div className="form-group">
+                            <label htmlFor="groups-dropdown">Select Group</label>
+                            <select
+                                className="form-control"
+                                id="groups-dropdown"
+                                value={selectedGroup}
+                                onChange={handleGroupSelection}
+                            >
+                                <option value="">Choose...</option>
+                                {groups.map((group) => (
+                                    <option key={group.id} value={group.id}>
+                                        {group.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <button type="button" className="btn btn-primary mt-2"
+                                    onClick={handleAddGroupMembers}>Add
+                            </button>
+                        </div>
+                        <div className="mt-3">
+                            <h5>Selected Contacts:</h5>
+                            {selectedContacts.length > 0 ? (
+                                <ul className="list-group">
+                                    {selectedContacts.map((contact) => (
+                                        <li key={contact.id}
+                                            className="list-group-item d-flex justify-content-between align-items-center">
+                                            {contact.contact_username}
+                                            <button type="button" className="btn btn-outline-danger btn-sm"
+                                                    onClick={() => handleRemoveContact(contact.id)}>
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted">No contacts selected.</p>
+                            )}
+                        </div>
+
+                        <div className="mt-3">
+                            <h5>Selected Slots:</h5>
+                            {selectedSlots.length > 0 ? (
+                                <ul className="list-group">
+                                    {selectedSlots.map((slot, index) => (
+                                        <li key={index}
+                                            className="list-group-item d-flex justify-content-between align-items-center">
+                                            {`${new DayPilot.Date(slot.start).toString("M/d/yyyy H:mm")} - ${new DayPilot.Date(slot.end).toString("M/d/yyyy H:mm")}`}
+                                            <span className="badge bg-primary rounded-pill">{slot.priority}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted">No slots selected.</p>
+                            )}
+                        </div>
+
+                        <div className="message-for-contact" style={{marginTop: "15px", marginBottom: "15px"}}>
+                            <label htmlFor="message"
+                                   className="label-frame label-frame-pink form-label">Message:</label>
+                            <textarea className="form-control" id="message" rows="5" value={message}
+                                      onChange={(e) => setMessage(e.target.value)}
+                                      placeholder="Enter your message here..."></textarea>
+                        </div>
+                        <div className="final-confirmation">
+                            <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     );
 };
 

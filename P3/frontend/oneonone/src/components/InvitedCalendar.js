@@ -20,6 +20,7 @@ const InvitedCalendar = ({ meetingId }) => {
     const [timeSlots, setTimeSlots] = useState([]);
     const { selectedSlots, setSelectedSlots } = useContext(MeetingContext);
     const [events, setEvents] = useState([]);
+    const [startDate, setStartDate] = useState(new DayPilot.Date().firstDayOfWeek());
 
     useEffect(() => {
         const fetchTimeSlots = async () => {
@@ -190,7 +191,7 @@ const InvitedCalendar = ({ meetingId }) => {
                 }
             });
         },
-        startDate: new DayPilot.Date().firstDayOfWeek(),
+        startDate: startDate,
     };
 
     return (
@@ -200,12 +201,9 @@ const InvitedCalendar = ({ meetingId }) => {
                     selectMode={"Week"}
                     showMonths={3}
                     skipMonths={3}
-                    startDate={new DayPilot.Date()}
-                    selectionDay={new DayPilot.Date()}
+                    startDate={startDate}
                     onTimeRangeSelected={args => {
-                        calendarRef.current.control.update({
-                            startDate: args.day,
-                        });
+                        setStartDate(args.day);
                     }}
                 />
             </div>
