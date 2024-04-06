@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MeetingProvider } from '../contexts/MeetingContext';
+import { MeetingContext } from '../contexts/MeetingContext';
 import axios from 'axios';
-import SelectCalendar from "../components/SelectCalendar";
+import { DayPilot } from "@daypilot/daypilot-lite-react";
+import InvitedCalendar from "../components/InvitedCalendar";
 
 const InvitedMeeting = () => {
     const { meeting_id} = useParams();
     const [meetingDetails, setMeetingDetails] = useState(null);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const { selectedSlots } = useContext(MeetingContext);
 
     useEffect(() => {
         const fetchMeetingDetails = async () => {
@@ -71,9 +73,32 @@ const InvitedMeeting = () => {
         }
     };
 
+    const postTimeSlots = async (meetingId) => {
+        const promises = selectedSlots.map(async slot => {
+            const start = new DayPilot.Date(slot.start);
+            const end = new DayPilot.Date(slot.end);
+            let current = start;
+
+            while (current < end) {
+                const priority = slot.priority === "High" ? 1 : 0;
+                await axios.post('http://127.0.0.1:8000/api/meeting/time-slots/create/', {
+                    meeting: meetingId,
+                    start_time: current.toString(),
+                    priority: priority,
+                }, {
+                    headers: {Authorization: `Bearer ${localStorage.getItem("token")}`},
+                });
+                current = current.addMinutes(30); // Move to the next slot
+            }
+        });
+
+        await Promise.all(promises);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         await updateParticipant();
+        await postTimeSlots(meeting_id);
 
         try {
             const token = localStorage.getItem("token");
@@ -105,7 +130,6 @@ const InvitedMeeting = () => {
 
 
     return (
-        <MeetingProvider>
             <div className="container-fluid main-content" style={{ minHeight: '100vh' }}>
                 <div className="row">
                     <div className="col-md-8 mt-4">
@@ -116,10 +140,10 @@ const InvitedMeeting = () => {
                     <div className="col-md-8">
                         <div className="datetime-selection">
                             <h2 className="big-title">Meeting Details</h2>
-                            <SelectCalendar disabled />
+                            <InvitedCalendar meetingId={meeting_id} />
                         </div>
                     </div>
-                        <div className="col-md-4">
+                    <div className="col-md-4">
                         <div>
                             {error && <div className="alert alert-danger">{error}</div>}
                             <div className="appointment-summary mb-3">
@@ -140,19 +164,41 @@ const InvitedMeeting = () => {
                                 <p className="bg-light p-2 rounded">{meetingDetails?.message || 'No additional message provided.'}</p>
                             </div>
                         </div>
+
+                        <div className="mt-3">
+                            <h5>Selected Slots:</h5>
+                            {selectedSlots.length > 0 ? (
+                                <ul className="list-group">
+                                    {selectedSlots.map((slot, index) => (
+                                        <li key={index}
+                                            className="list-group-item d-flex justify-content-between align-items-center">
+                                            {`${new DayPilot.Date(slot.start).toString("M/d/yyyy H:mm")} - ${new DayPilot.Date(slot.end).toString("M/d/yyyy H:mm")}`}
+                                            <span className="badge bg-primary rounded-pill">{slot.priority}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted">No slots selected.</p>
+                            )}
+                        </div>
+
                         <form onSubmit={handleSubmit}>
                             <div className="message-for-contact mb-3">
-                                <label htmlFor="responseMessage" className="label-frame label-frame-pink form-label">Your Message:</label>
-                                <textarea className="form-control" id="responseMessage" rows="5" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Enter your response here..."></textarea>
+                                <label htmlFor="responseMessage" className="label-frame label-frame-pink form-label">Your
+                                    Message:</label>
+                                <textarea className="form-control" id="responseMessage" rows="5" value={message}
+                                          onChange={(e) => setMessage(e.target.value)}
+                                          placeholder="Enter your response here..."></textarea>
                             </div>
                             <div className="final-confirmation">
-                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit Response</button>
+                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit
+                                    Response
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-        </MeetingProvider>
     );
 };
 

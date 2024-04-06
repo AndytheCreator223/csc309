@@ -20,10 +20,6 @@ const CreateMeeting = () => {
     const { selectedSlots } = useContext(MeetingContext);
 
     useEffect(() => {
-        console.log("Selected Slots:", selectedSlots);
-    }, [selectedSlots]);
-
-    useEffect(() => {
         const fetchContacts = async () => {
             try {
                 const token = localStorage.getItem("token"); // Assuming token storage for authentication

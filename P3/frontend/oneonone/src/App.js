@@ -16,25 +16,25 @@ import "./style.css";
 import {MeetingProvider} from "./contexts/MeetingContext";
 
 function App() {
-  return (
-      <MeetingProvider>
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/meetings" element={<Meetings />} />
-        <Route path="/notifications" element={<Notification />} />
-        <Route path="/contacts" element={<Contacts />} />
-        <Route path="/create-meeting" element={<CreateMeeting />} />
-        <Route path="/invited-meeting/:meeting_id/" element={<InvitedMeeting />} />
-        <Route path="/change-meeting/:meeting_id/" element={<ChangeMeeting />} />
-        <Route path="/finalize-meeting/:meeting_id/" element={<FinalizeMeeting />} />
-      </Routes>
-    </Router>
+    return (
+        <MeetingProvider>
+            <Router>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/account" element={<Account />} />
+                    <Route path="/meetings" element={<Meetings />} />
+                    <Route path="/notifications" element={<Notification />} />
+                    <Route path="/contacts" element={<Contacts />} />
+                    <Route path="/create-meeting" element={<CreateMeeting />} />
+                    <Route path="/invited-meeting/:meeting_id/" element={<InvitedMeeting />} />
+                    <Route path="/change-meeting/:meeting_id/" element={<ChangeMeeting />} />
+                    <Route path="/finalize-meeting/:meeting_id/" element={<FinalizeMeeting />} />
+                </Routes>
+            </Router>
         </MeetingProvider>
-  );
+    );
 }
 
 export default App;
