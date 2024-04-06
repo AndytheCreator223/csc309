@@ -71,7 +71,7 @@ def create_meeting_notify(request):
             owner=participant.user,
             title="Meeting Scheduling Deadline Approaching",
             content=f"The deadline to schedule your meeting titled '{meeting.title}' is approaching. Please finalize your meeting times.\n"
-                    f"Link: http://localhost:3000/meetings",
+                    f"Link: http://localhost:3000/invited-meeting/{meeting.pk}",
             show_time=show_time,
             expire_time=expire_time,
             is_seen=False
@@ -83,7 +83,7 @@ def create_meeting_notify(request):
                    f"Meeting Duration: {meeting.time_limit} \n"
                    f"Scheduling Deadline: {meeting.deadline.strftime('%Y-%m-%d %H:%M:%S')} \n"
                    f"Meeting Message: {meeting.message} \n"
-                   f"Link: http://localhost:3000/meetings"
+                   f"Link: http://localhost:3000/invited-meeting/{meeting.pk}"
                    )
         email_sent += send_email(subject, message, [participant.user.email], [reply_to])
     
@@ -544,7 +544,7 @@ def notify_not_responded_invitees(request):
                    f"Meeting Duration: {meeting.time_limit} \n"
                    f"Scheduling Deadline: {meeting.deadline.strftime('%Y-%m-%d %H:%M:%S')} \n"
                    f"Meeting Message: {meeting.message} \n"
-                   f"Schedule Link: http://localhost:3000/meetings"
+                   f"Schedule Link: http://localhost:3000/invited-meeting/{meeting.pk}"
                    )
         email_sent += send_email(subject, message, [email], reply_to)
 
