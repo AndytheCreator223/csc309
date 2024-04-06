@@ -49,7 +49,6 @@ const InvitedMeeting = () => {
                     },
                 }
             );
-            alert('Response updated successfully.');
         } catch (err) {
               let errorMessage = "Failed to create meeting. Please try again."; // Default error message
               if (err.response && err.response.data) {
@@ -75,7 +74,23 @@ const InvitedMeeting = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         await updateParticipant();
-        window.location.href = '/meetings';
+
+        try {
+            const token = localStorage.getItem("token");
+            // Call the API to delete existing time slots for the meeting
+            await axios.delete(
+                `http://127.0.0.1:8000/api/meeting/time-slots/delete/${meeting_id}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            window.location.href = '/meetings';
+        } catch (error) {
+            console.error('Failed to delete time slots:', error);
+            setError("Failed to delete existing time slots.");
+        }
     };
 
     const formatDateForInput = (dateString) => {
