@@ -52,6 +52,27 @@ const CreateMeeting = () => {
         fetchGroups();
     }, []);
 
+    const notifyParticipantsByEmail = async (meetingId) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/meeting/create-meeting-notify/`,
+                { meeting_id: meetingId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const message = response.data.message;
+            alert('Meeting successfully created. ' + message);
+            // window.location.href = '/meetings';
+        } catch (error) {
+            console.error('Failed to notify invitees:', error);
+            handleError('Failed to notify invitees');
+        }
+    };
+
 
     const addParticipantsToMeeting = async (meetingId, participants) => {
         const participantPromises = participants.map(participantId =>
@@ -65,8 +86,6 @@ const CreateMeeting = () => {
 
         try {
             await Promise.all(participantPromises);
-            alert('Meeting successfully created');
-            window.location.href = '/meetings';
         } catch (error) {
             console.error('Failed to add one or more participants:', error);
             handleError(`Failed to add one or more participants: ${error.response?.data.detail || 'Unknown error'}`);
@@ -163,6 +182,7 @@ const CreateMeeting = () => {
                 const meetingId = response.data.id; // Assuming the response includes the meeting ID
                 const participants = selectedContacts.map(contact => contact.contact_user_id); // Adjusted to match your data structure
                 await addParticipantsToMeeting(meetingId, participants);
+                await notifyParticipantsByEmail(meetingId);
             }
 
         } catch (err) {

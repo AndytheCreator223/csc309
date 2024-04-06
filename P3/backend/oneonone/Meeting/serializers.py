@@ -23,7 +23,6 @@ class ParticipantCreateSerializer(serializers.ModelSerializer):
         fields = ['meeting', 'user', 'content']
 
     def validate(self, data):
-        print(data)
         # Check if the provided user is a contact of the current request user
         request_user = self.context['request'].user
         user_id = data['user']
