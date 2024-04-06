@@ -83,7 +83,7 @@ const Sidebar = () => {
                 </li>
             </ul>
 
-            <footer className="sidebar-footer">
+            <footer className="sidebar-footer mt-5">
                 <p>Copyright &copy; 2024 by 1on1</p>
             </footer>
         </nav>
