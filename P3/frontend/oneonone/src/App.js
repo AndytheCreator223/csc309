@@ -10,6 +10,7 @@ import Notification from "./pages/Notification";
 import Contacts from "./pages/Contact";
 import CreateMeeting from "./pages/CreateMeeting";
 import InvitedMeeting from "./pages/InvitedMeeting";
+import ChangeMeeting from "./pages/ChangeMeeting"
 import "./style.css";
 import {MeetingProvider} from "./contexts/MeetingContext";
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/create-meeting" element={<CreateMeeting />} />
         <Route path="/invited-meeting/:meeting_id/" element={<InvitedMeeting />} />
+        <Route path="/change-meeting/:meeting_id/" element={<ChangeMeeting />} />
       </Routes>
     </Router>
         </MeetingProvider>

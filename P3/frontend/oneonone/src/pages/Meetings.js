@@ -65,6 +65,19 @@ const Meetings = () => {
         }
     };
 
+    const handleDelete = async (meetingId) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://127.0.0.1:8000/api/meeting/pending-meeting/delete/${meetingId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            fetchMeetings(); // Re-fetch meetings to update the list
+        } catch (err) {
+            console.error('Failed to delete meeting:', err);
+            setError('Failed to delete meeting');
+        }
+    };
+
     return (
         <div className="container-fluid">
             <div className="row">
@@ -84,13 +97,13 @@ const Meetings = () => {
                                 <div key={meeting.id} className="list-group-item list-group-item-action flex-column align-items-start mb-2 rounded">
                                     <div className="d-flex w-100 justify-content-between">
                                         {viewType === 'owned' ? (
-                                            <Link to={`/modify-meeting/${meeting.id}`} className="me-auto" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                            <div className="me-auto" style={{ color: 'inherit', textDecoration: 'none' }}>
                                                 <h5 className="mb-1 font-weight-bold">{meeting.title}</h5>
                                                 <p className="ddl">Deadline: {new Date(meeting.deadline).toLocaleString()}</p>
                                                 {meeting.participants.map(participant => (
                                                     <p key={participant.user.id} className="mb-1">{participant.user.first_name} {participant.user.last_name}: {participant.response ? 'Responded' : 'Not Responded'}</p>
                                                 ))}
-                                            </Link>
+                                            </div>
                                         ) : (
                                             <>
                                                 <div className="me-auto">
@@ -108,7 +121,13 @@ const Meetings = () => {
                                             new Date(meeting.deadline) < new Date() ? (
                                                 <Link to={`/finalize/${meeting.id}`} className="btn btn-primary" style={{ height: '3em' }}>Finalize</Link>
                                             ) : (
-                                                <button type="button" className="btn btn-warning" onClick={() => handleNotify(meeting.id)} style={{ height: '3em' }}>Notify</button>
+                                                <>
+                                                    <button type="button" className="btn btn-warning" onClick={() => handleNotify(meeting.id)} style={{ height: '3em', marginRight: '5px' }}>Notify</button>
+                                                    <div className="d-flex justify-content-between">
+                                                        <Link to={`/change-meeting/${meeting.id}`} className="btn btn-secondary" style={{ height: '3em', marginRight: '5px' }}><p  style={{marginTop: '5px' }}>Edit</p></Link>
+                                                        <button type="button" className="btn btn-danger" onClick={() => handleDelete(meeting.id)} style={{ height: '3em' }}>Delete</button>
+                                                    </div>
+                                                </>
                                             )
                                         )}
                                     </div>
