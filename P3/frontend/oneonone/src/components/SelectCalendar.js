@@ -85,14 +85,19 @@ const SelectCalendar = () => {
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select"}
         ];
         const modal = await DayPilot.Modal.form(form);
-        if (!modal.result) { return; }
+
+        if (!modal.result) {
+            return;
+        }
+
+        const prioritySelected = modal.result.priority ? modal.result.priority : "High";
 
         const newSlot = {
             start: args.start.toString(),
             end: args.end.toString(),
             text: "Selected Slot",
-            backColor: modal.result.priority === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
-            priority: modal.result.priority,
+            backColor: prioritySelected === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
+            priority: prioritySelected,
             id: DayPilot.guid(),
         };
 
@@ -110,11 +115,18 @@ const SelectCalendar = () => {
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select", value: e.data.priority}
         ];
         const modal = await DayPilot.Modal.form(form);
-        if (!modal.result) { return; }
+
+        if (!modal.result) {
+            return;
+        }
+
+        const prioritySelected = modal.result.priority ? modal.result.priority : "High";
 
         const updatedSlots = selectedSlots.map(slot => {
             if (slot.id === e.data.id) {
-                return {...slot, priority: modal.result.priority, backColor: modal.result.priority === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)"};
+                return {...slot,
+                    priority: prioritySelected,
+                    backColor: prioritySelected === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)"};
             }
             return slot;
         });
