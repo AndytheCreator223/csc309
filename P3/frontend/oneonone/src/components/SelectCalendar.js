@@ -69,6 +69,12 @@ const SelectCalendar = () => {
             return;
         }
 
+        const overlapSelected = selectedSlots.some(slot => args.start < new DayPilot.Date(slot.end) && args.end > new DayPilot.Date(slot.start));
+        if (overlapSelected) {
+            alert("Selected slot overlaps with another selected slot.");
+            return;
+        }
+
         const form = [
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select"}
         ];
@@ -93,7 +99,6 @@ const SelectCalendar = () => {
             return;
         }
 
-        const dp = calendarRef.current.control;
         const e = args.e;
         const form = [
             {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select", value: e.data.priority}
