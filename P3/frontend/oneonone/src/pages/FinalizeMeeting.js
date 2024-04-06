@@ -4,7 +4,7 @@ import { MeetingProvider } from '../contexts/MeetingContext';
 import axios from 'axios';
 import SelectCalendar from "../components/SelectCalendar";
 
-const ChangeMeeting = () => {
+const FinalizeMeeting = () => {
     const { meeting_id} = useParams();
     const [meetingDetails, setMeetingDetails] = useState(null);
     const [error, setError] = useState('');
@@ -130,7 +130,7 @@ const ChangeMeeting = () => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="final-confirmation">
-                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Submit Response</button>
+                                <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Finalize Meeting</button>
                             </div>
                         </form>
                     </div>
@@ -140,4 +140,4 @@ const ChangeMeeting = () => {
     );
 };
 
-export default ChangeMeeting;
+export default FinalizeMeeting;

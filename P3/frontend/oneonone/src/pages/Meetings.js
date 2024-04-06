@@ -119,7 +119,7 @@ const Meetings = () => {
                                         )}
                                         {viewType === 'owned' && (
                                             new Date(meeting.deadline) < new Date() ? (
-                                                <Link to={`/finalize/${meeting.id}`} className="btn btn-primary" style={{ height: '3em' }}>Finalize</Link>
+                                                <Link to={`/finalize-meeting/${meeting.id}`} className="btn btn-primary" style={{ height: '3em' }}>Finalize</Link>
                                             ) : (
                                                 <>
                                                     <button type="button" className="btn btn-warning" onClick={() => handleNotify(meeting.id)} style={{ height: '3em', marginRight: '5px' }}>Notify</button>
