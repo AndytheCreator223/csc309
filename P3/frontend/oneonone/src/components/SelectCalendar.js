@@ -18,21 +18,8 @@ const styles = {
 
 const SelectCalendar = () => {
     const calendarRef = useRef()
-    const { setSelectedSlots } = useContext(MeetingContext);
-
-    const [calendarConfig, setCalendarConfig] = useState({
-        viewType: "Week",
-        durationBarVisible: false,
-        timeRangeSelectedHandling: "Enabled",
-        onTimeRangeSelected: args => {
-            setSelectedSlots({
-                start: args.start.toString(),
-                end: args.end.toString(),
-            });
-            calendarRef.current.control.clearSelection();
-        },
-        startDate: new DayPilot.Date().firstDayOfWeek(),
-    });
+    const { selectedSlots, setSelectedSlots } = useContext(MeetingContext);
+    const [events, setEvents] = useState([]);
 
     useEffect(() => {
         const fetchFinalizedMeetings = async () => {
@@ -54,7 +41,7 @@ const SelectCalendar = () => {
                         backgroundColor: "#AAAAAA",
                     };
                 });
-                calendarRef.current.control.update({events: events});
+                setEvents(events);
             } catch (error) {
                 console.error('Failed to fetch finalized meetings', error);
             }
@@ -63,6 +50,75 @@ const SelectCalendar = () => {
             console.log('Finalized meetings fetched successfully');
         });
     }, []);
+
+    useEffect(() => {
+        // Merge events and selectedSlots into one array for rendering
+        calendarRef.current.control.update({
+            events: [...events, ...selectedSlots]
+        });
+    }, [events, selectedSlots]);
+
+    const handleTimeRangeSelected = async (args) => {
+        const dp = calendarRef.current.control;
+        dp.clearSelection();
+
+        const form = [
+            {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select"}
+        ];
+        const modal = await DayPilot.Modal.form(form);
+        if (!modal.result) { return; }
+
+        const newSlot = {
+            start: args.start.toString(),
+            end: args.end.toString(),
+            text: "Selected Slot",
+            backColor: modal.result.priority === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
+            priority: modal.result.priority,
+            id: DayPilot.guid(),
+        };
+
+        setSelectedSlots(prev => [...prev, newSlot]);
+    };
+
+    const handleEventClick = async (args) => {
+        const dp = calendarRef.current.control;
+        const e = args.e;
+        const form = [
+            {name: "Priority", id: "priority", options: [{id: "High", name: "High"}, {id: "Low", name: "Low"}], type: "select", value: e.data.priority}
+        ];
+        const modal = await DayPilot.Modal.form(form);
+        if (!modal.result) { return; }
+
+        const updatedSlots = selectedSlots.map(slot => {
+            if (slot.id === e.data.id) {
+                return {...slot, priority: modal.result.priority, backColor: modal.result.priority === "High" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)"};
+            }
+            return slot;
+        });
+
+        setSelectedSlots(updatedSlots);
+    };
+
+    const calendarConfig = {
+        viewType: "Week",
+        durationBarVisible: true,
+        timeRangeSelectedHandling: "Enabled",
+        onTimeRangeSelected: handleTimeRangeSelected,
+        onEventClick: handleEventClick,
+        eventDeleteHandling: "Enabled",
+        onEventDelete: args => {
+            const dp = calendarRef.current.control;
+            dp.events.remove(args.e);
+            setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
+        },
+        startDate: new DayPilot.Date().firstDayOfWeek(),
+        contextMenu: new DayPilot.Menu({
+            items: [
+                {text: "Delete", onClick: args => args.source.remove()},
+                {text: "Edit Priority", onClick: args => handleEventClick(args)}
+            ]
+        }),
+    };
 
     return (
         <div style={styles.wrap}>
@@ -81,10 +137,7 @@ const SelectCalendar = () => {
                 />
             </div>
             <div style={styles.main}>
-                <DayPilotCalendar
-                    {...calendarConfig}
-                    ref={calendarRef}
-                />
+                <DayPilotCalendar {...calendarConfig} ref={calendarRef} />
             </div>
         </div>
     );
