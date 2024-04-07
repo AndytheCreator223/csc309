@@ -644,9 +644,8 @@ def post_finalized_meetings(request):
                         status=status.HTTP_403_FORBIDDEN)
 
     invitees = Participant.objects.filter(meeting=meeting, response=True).values_list('user_id', flat=True)
-    invitees_check_remaining = set(invitees)
     owner_time_slots = TimeSlot.objects.filter(meeting_id=meeting_id, user=meeting.owner).values_list('start_time')
-    owner_time_slots = [dt[0].strftime('%Y-%m-%d %H:%M:%S') for dt in owner_time_slots]
+    owner_time_slots = [dt[0].strftime('%Y-%m-%dT%H:%M:%S') for dt in owner_time_slots]
 
     user_processed, time_processed = set(), set()
 
@@ -659,7 +658,7 @@ def post_finalized_meetings(request):
                             status=status.HTTP_403_FORBIDDEN)
 
         participant_time_slots = TimeSlot.objects.filter(meeting_id=meeting_id, user_id=slot["user"]).values_list('start_time')
-        participant_time_slots = [dt[0].strftime('%Y-%m-%d %H:%M:%S') for dt in participant_time_slots]
+        participant_time_slots = [dt[0].strftime('%Y-%m-%dT%H:%M:%S') for dt in participant_time_slots]
 
         if slot["time"] not in owner_time_slots or slot["time"] not in participant_time_slots:
             return Response({"error": f"Participant {slot['user']}'s time was not an available time slot."},
@@ -670,20 +669,7 @@ def post_finalized_meetings(request):
                             status=status.HTTP_403_FORBIDDEN)
         user_processed.add(slot["user"])
         time_processed.add(slot["time"])
-        invitees_check_remaining.remove(slot["user"])
-    for left_over in left_overs:
-        if left_over["user"] not in invitees:
-            return Response({"error": f"Participant {left_over['user']} was not invited to the meeting."},
-                            status=status.HTTP_403_FORBIDDEN)
-        if left_over["user"] in user_processed:
-            return Response({"error": "Duplicate users."},
-                            status=status.HTTP_403_FORBIDDEN)
-        user_processed.add(left_over["user"])
-        invitees_check_remaining.remove(left_over["user"])
 
-    if len(invitees_check_remaining) != 0:
-        return Response({"error": f"Some invitees are not handled."},
-                        status=status.HTTP_403_FORBIDDEN)
 
     email_sent = 0
     reply_to = [meeting.owner.email]
@@ -706,7 +692,7 @@ def post_finalized_meetings(request):
                    )
         email_sent += send_email(subject, message, [User.objects.get(pk=slot["user"]).email], reply_to)
 
-        expire_time = datetime.strptime(slot["time"], '%Y-%m-%d %H:%M:%S')
+        expire_time = datetime.strptime(slot["time"], '%Y-%m-%dT%H:%M:%S')
         Notification.objects.create(
             owner=meeting.owner,
             title = "Meeting Reminder: " + meeting.title,
