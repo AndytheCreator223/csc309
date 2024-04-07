@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MeetingProvider } from '../contexts/MeetingContext';
 import axios from 'axios';
-import SelectCalendar from "../components/SelectCalendar";
-import { MeetingContext } from '../contexts/MeetingContext';
+import { DayPilot, DayPilotCalendar, DayPilotNavigator } from "@daypilot/daypilot-lite-react";
 
 const FinalizeMeeting = () => {
     const { meeting_id } = useParams();
     const [meetingDetails, setMeetingDetails] = useState(null);
     const [error, setError] = useState('');
     const [participants, setParticipants] = useState([]);
-    const { setSelectedSlots } = useContext(MeetingContext);
+    const [startDate, setStartDate] = useState(new DayPilot.Date().firstDayOfWeek());
+    const [participantTimeSlots, setParticipantTimeSlots] = useState([]);
+    const [selectedSlots, setSelectedSlots] = useState([]);
+    const calendarRef = React.useRef();
 
     useEffect(() => {
         const fetchMeetingDetails = async () => {
@@ -53,6 +55,26 @@ const FinalizeMeeting = () => {
         fetchParticipants();
     }, [meeting_id]);
 
+    const updateSlotsAndRerender = (data) => {
+        let slots = [];
+
+        if (data.suggested_meetings) {
+            slots = data.suggested_meetings.slots.map(slot => ({
+                start: slot.time,
+                end: new DayPilot.Date(slot.time).addMinutes(30).toString(),
+                text: slot.user,
+            }));
+            setSelectedSlots(slots);
+        } else {
+            slots = data.time_slots.map(slot => ({
+                start: slot.start_time,
+                end: new DayPilot.Date(slot.start_time).addMinutes(30).toString(),
+                priority: slot.priority
+            }));
+            setParticipantTimeSlots(slots);
+        }
+    };
+
     const handleParticipantClick = async (userId) => {
         try {
             const token = localStorage.getItem("token");
@@ -64,7 +86,8 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            setSelectedSlots(response.data);
+            updateSlotsAndRerender(response.data);
+            console.log(participantTimeSlots);
         } catch (error) {
             console.error('Failed to fetch participant response:', error);
             setError("Failed to load participant response.");
@@ -92,7 +115,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            setSelectedSlots(response.data);
+            updateSlotsAndRerender(response.data);
         } catch (error) {
             console.error('Failed to get suggested meeting:', error);
             setError("Failed to load suggested meeting.");
@@ -110,7 +133,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            setSelectedSlots(response.data);
+            updateSlotsAndRerender(response.data);
         } catch (error) {
             console.error('Failed to get suggested meeting:', error);
             setError("Failed to load suggested meeting.");
@@ -121,6 +144,40 @@ const FinalizeMeeting = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         window.location.href = '/meetings';
+    };
+
+    const handleEventDelete = async (args) => {
+        if (args.e.data.readOnly) {
+            alert("Cannot delete finalized meeting");
+            return;
+        }
+        const dp = calendarRef.current.control;
+        dp.events.remove(args.e);
+        setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
+    }
+
+    const calendarConfig = {
+        viewType: "Week",
+        durationBarVisible: true,
+        timeRangeSelectedHandling: "Enabled",
+        // onTimeRangeSelected: handleTimeRangeSelected,
+        eventMoveHandling: "Disabled",
+        eventResizeHandling: "Disabled",
+        // onEventClick: handleEventClick,
+        eventDeleteHandling: "Enabled",
+        onEventDelete: handleEventDelete,
+        events: selectedSlots,
+        onBeforeCellRender: args => {
+            participantTimeSlots.forEach(slot => {
+                const slotStart = new DayPilot.Date(slot.start);
+                const slotEnd = slotStart.addMinutes(30); // Assuming each time slot is 30 minutes
+
+                if (args.cell.start >= slotStart && args.cell.start < slotEnd) {
+                    args.cell.properties.backColor = slot.priority === 0 ? "#ffcccc" : "#ccccff"; // Low priority: light red, High priority: light blue
+                }
+            });
+        },
+        startDate: startDate,
     };
 
    return (
@@ -135,7 +192,20 @@ const FinalizeMeeting = () => {
                 <div className="col-md-8">
                     <div className="datetime-selection">
                         <h2 className="big-title">Meeting Details</h2>
-                        <SelectCalendar disabled />
+                        <div style={{display: "flex"}}>
+                            <div style={{marginRight: "10px"}}>
+                                <DayPilotNavigator
+                                    selectMode={"Week"}
+                                    showMonths={3}
+                                    skipMonths={3}
+                                    startDate={startDate}
+                                    onTimeRangeSelected={args => setStartDate(args.day)}
+                                />
+                            </div>
+                            <div style={{flexGrow: "1"}}>
+                                <DayPilotCalendar {...calendarConfig} />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="col-md-4">
@@ -161,7 +231,7 @@ const FinalizeMeeting = () => {
                         <div className="suggested-meetings-actions mb-3">
                             <button
                                 className="btn btn-info me-2"
-                                style={{ marginBottom: '5px' }}
+                                style={{marginBottom: '5px'}}
                                 onClick={() => handleGetSuggestedMeetingsOrder(meeting_id)}
                             >
                                 Display Suggested Meeting based on respondents' Order
@@ -177,9 +247,12 @@ const FinalizeMeeting = () => {
                             <h5>Responded Participants</h5>
                             <ul className="list-group">
                                 {participants.filter(p => p.response).map((participant) => (
-                                    <li key={participant.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                    <li key={participant.id}
+                                        className="list-group-item d-flex justify-content-between align-items-center">
                                         <span>{participant.first_name} {participant.last_name}</span>
-                                        <button className="btn btn-outline-primary btn-sm" onClick={() => handleParticipantClick(participant.id)}>View</button>
+                                        <button className="btn btn-outline-primary btn-sm"
+                                                onClick={() => handleParticipantClick(participant.id)}>View
+                                        </button>
                                     </li>
                                 ))}
                             </ul>
@@ -194,17 +267,36 @@ const FinalizeMeeting = () => {
                                 ))}
                             </ul>
                         </div>
+
+                        <div className="mt-3">
+                            <h5>Selected Slots:</h5>
+                            {selectedSlots.length > 0 ? (
+                                <ul className="list-group">
+                                    {selectedSlots.map((slot, index) => (
+                                        <li key={index}
+                                            className="list-group-item d-flex justify-content-between align-items-center">
+                                            {`${new DayPilot.Date(slot.start).toString("M/d/yyyy H:mm")} - ${new DayPilot.Date(slot.end).toString("M/d/yyyy H:mm")}`}
+                                            <span className="badge bg-primary rounded-pill">{slot.priority}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-muted">No slots selected.</p>
+                            )}
+                        </div>
+
                     </div>
                     <form onSubmit={handleSubmit}>
-                        <div className="final-confirmation">
-                            <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Finalize Meeting</button>
+                        <div className="final-confirmation mt-3">
+                            <button type="submit" className="btn btn-primary w-50 mb-5 submit-button">Finalize Meeting
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </MeetingProvider>
-    );
+   );
 };
 
 export default FinalizeMeeting;
