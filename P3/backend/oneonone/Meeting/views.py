@@ -846,23 +846,23 @@ def get_suggested_meetings_order(request, meeting_id):
                 priority=priority,
                 n_scheduled=n_scheduled
             )
-        for invitee in matching:
-            SuggestedTimeSlot.objects.create(
-                meeting=suggested_schedule,
-                time=matching[invitee],
-                user=User.objects.get(id=invitee)
-            )
+            for invitee in matching:
+                SuggestedTimeSlot.objects.create(
+                    meeting=suggested_schedule,
+                    time=matching[invitee],
+                    user=User.objects.get(id=invitee)
+                )
+            for invitee in leftovers:
+                SuggestedTimeSlot.objects.create(
+                    meeting=suggested_schedule,
+                    time=None,
+                    user=User.objects.get(id=invitee)
+                )
         slots_data = [
             {"user": invitee,
              "time": matching[invitee]}
             for invitee in matching
         ]
-        for invitee in leftovers:
-            SuggestedTimeSlot.objects.create(
-                meeting=suggested_schedule,
-                time=None,
-                user=User.objects.get(id=invitee)
-            )
         left_overs = [
             {"user": invitee}
             for invitee in leftovers
@@ -980,23 +980,23 @@ def get_suggested_meetings_priority(request, meeting_id):
                 priority=priority,
                 n_scheduled=n_scheduled
             )
-        for invitee in matching:
-            SuggestedTimeSlot.objects.create(
-                meeting=suggested_schedule,
-                time=matching[invitee],
-                user=User.objects.get(id=invitee)
-            )
+            for invitee in matching:
+                SuggestedTimeSlot.objects.create(
+                    meeting=suggested_schedule,
+                    time=matching[invitee],
+                    user=User.objects.get(id=invitee)
+                )
+            for invitee in leftovers:
+                SuggestedTimeSlot.objects.create(
+                    meeting=suggested_schedule,
+                    time=None,
+                    user=User.objects.get(id=invitee)
+                )
         slots_data = [
             {"user": invitee,
              "time": matching[invitee]}
             for invitee in matching
         ]
-        for invitee in leftovers:
-            SuggestedTimeSlot.objects.create(
-                meeting=suggested_schedule,
-                time=None,
-                user=User.objects.get(id=invitee)
-            )
         left_overs = [
             {"user": invitee}
             for invitee in leftovers
