@@ -117,6 +117,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
+            console.log(response.data)
             updateSlotsAndRerender(response.data);
         } catch (error) {
             console.error('Failed to get suggested meeting:', error);
@@ -170,7 +171,7 @@ const FinalizeMeeting = () => {
             );
             const message = response.data.message;
             alert('Meeting successfully finalized. ' + message);
-            // window.location.href = '/meetings';
+            window.location.href = '/meetings';
         } catch (err) {
               let errorMessage = "Failed to finalize the meeting. Please try again."; // Default error message
               if (err.response && err.response.data) {
