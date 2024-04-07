@@ -795,15 +795,22 @@ def get_suggested_meetings_order(request, meeting_id):
         for schedule in suggested_schedules:
             if schedule.priority == Priority.INVITEE_ORDER:
                 time_slots = SuggestedTimeSlot.objects.filter(meeting=schedule).select_related('user')
-
-                slots_data = [
-                    {"user": slot.user.pk, "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
-                    for slot in time_slots if slot.time is not None
-                ]
-                left_overs = [
-                    {"user": slot.user.pk}
-                    for slot in time_slots if slot.time is None
-                ]
+                slots_data, left_overs = [], []
+                for slot in time_slots:
+                    if slot.time is not None:
+                        user = User.objects.get(pk=slot.user.pk)
+                        slots_data = [
+                            {"user": slot.user.pk,
+                             "name": user.first_name + " " + user.last_name,
+                             "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
+                        ]
+                for slot in time_slots:
+                    if slot.time is None:
+                        user = User.objects.get(pk=slot.user.pk)
+                        left_overs = [
+                            {"user": slot.user.pk,
+                             "name": user.first_name + " " + user.last_name}
+                        ]
                 response_data = {
                     "priority": schedule.priority.name,
                     "n_scheduled": schedule.n_scheduled,
@@ -858,15 +865,20 @@ def get_suggested_meetings_order(request, meeting_id):
                     time=None,
                     user=User.objects.get(id=invitee)
                 )
-        slots_data = [
-            {"user": invitee,
-             "time": matching[invitee]}
-            for invitee in matching
-        ]
-        left_overs = [
-            {"user": invitee}
-            for invitee in leftovers
-        ]
+        slots_data, left_overs = [], []
+        for invitee in matching:
+            user = User.objects.get(pk=invitee)
+            slots_data = [
+                {"user": invitee,
+                 "name": user.first_name + " " + user.last_name,
+                 "time": matching[invitee]}
+            ]
+        for invitee in leftovers:
+            user = User.objects.get(pk=invitee)
+            left_overs = [
+                {"user": invitee,
+                 "name": user.first_name + " " + user.last_name}
+            ]
         response_data = {
             "priority": priority.name,
             "n_scheduled": n_scheduled,
@@ -929,15 +941,22 @@ def get_suggested_meetings_priority(request, meeting_id):
         for schedule in suggested_schedules:
             if schedule.priority == Priority.INVITEE_PRIORITIES:
                 time_slots = SuggestedTimeSlot.objects.filter(meeting=schedule).select_related('user')
-
-                slots_data = [
-                    {"user": slot.user.pk, "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
-                    for slot in time_slots if slot.time is not None
-                ]
-                left_overs = [
-                    {"user": slot.user.pk}
-                    for slot in time_slots if slot.time is None
-                ]
+                slots_data, left_overs = [], []
+                for slot in time_slots:
+                    if slot.time is not None:
+                        user = User.objects.get(pk=slot.user.pk)
+                        slots_data = [
+                            {"user": slot.user.pk,
+                             "name": user.first_name + " " + user.last_name,
+                             "time": slot.time.strftime("%Y-%m-%d %H:%M:%S")}
+                        ]
+                for slot in time_slots:
+                    if slot.time is None:
+                        user = User.objects.get(pk=slot.user.pk)
+                        left_overs = [
+                            {"user": slot.user.pk,
+                             "name": user.first_name + " " + user.last_name}
+                        ]
                 response_data = {
                     "priority": schedule.priority.name,
                     "n_scheduled": schedule.n_scheduled,
@@ -992,15 +1011,20 @@ def get_suggested_meetings_priority(request, meeting_id):
                     time=None,
                     user=User.objects.get(id=invitee)
                 )
-        slots_data = [
-            {"user": invitee,
-             "time": matching[invitee]}
-            for invitee in matching
-        ]
-        left_overs = [
-            {"user": invitee}
-            for invitee in leftovers
-        ]
+        slots_data, left_overs = [], []
+        for invitee in matching:
+            user = User.objects.get(pk=invitee)
+            slots_data = [
+                {"user": invitee,
+                 "name": user.first_name + " " + user.last_name,
+                 "time": matching[invitee]}
+            ]
+        for invitee in leftovers:
+            user = User.objects.get(pk=invitee)
+            left_overs = [
+                {"user": invitee,
+                 "name": user.first_name + " " + user.last_name}
+            ]
         response_data = {
             "priority": priority.name,
             "n_scheduled": n_scheduled,
