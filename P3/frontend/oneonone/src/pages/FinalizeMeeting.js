@@ -142,11 +142,58 @@ const FinalizeMeeting = () => {
         }
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        window.location.href = '/meetings';
+
+        const slots = selectedSlots.map(slot => ({
+            user: slot.data.userId,
+            time: new DayPilot.Date(slot.start).toString("yyyy-MM-ddTHH:mm:ss"),
+        }));
+
+        const requestBody = {
+            meeting_id: meeting_id,
+            slots: slots,
+            leftovers: [], // Assuming no leftovers for now
+        };
+
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                `http://127.0.0.1:8000/api/meeting/finalized-meeting/create/`,
+                requestBody,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            const message = response.data.message;
+            alert('Meeting successfully finalized. ' + message);
+            // window.location.href = '/meetings';
+        } catch (err) {
+              let errorMessage = "Failed to finalize the meeting. Please try again."; // Default error message
+              if (err.response && err.response.data) {
+                  if (typeof err.response.data === 'string') {
+                    errorMessage = err.response.data;
+                  } else if (err.response.data.detail) {
+                    errorMessage = err.response.data.detail;
+                  } else {
+                    errorMessage = Object.keys(err.response.data)
+                                          .map(key => {
+                                            const value = err.response.data[key];
+                                            // Check if the value is an array to use join; otherwise, use it directly
+                                            return Array.isArray(value) ? `${value.join(" ")}` : `${value}`;
+                                          })
+                                          .join(", ");
+                  }
+              }
+              console.error("Failed to finalize meeting:", err);
+              setError(errorMessage);
+
+        }
     };
+
 
     const handleEventDelete = async (args) => {
         if (args.e.data.readOnly) {
@@ -215,6 +262,23 @@ const FinalizeMeeting = () => {
         },
         startDate: startDate,
     };
+
+    const deadlineHasPassed = () => {
+        if (!meetingDetails || !meetingDetails.deadline) return false;
+        const deadlineDate = new Date(meetingDetails.deadline);
+        return deadlineDate < new Date();
+    };
+
+    // Your existing event handlers and helper functions
+
+    if (!deadlineHasPassed()) {
+        return (
+            <div className="alert alert-warning" role="alert">
+                You cannot finalize this meeting because the deadline has not passed.
+                <div><Link to="/meetings">Back to Meetings</Link></div>
+            </div>
+        );
+    }
 
    return (
     <MeetingProvider>
