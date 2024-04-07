@@ -62,7 +62,9 @@ const FinalizeMeeting = () => {
             slots = data.suggested_meetings.slots.map(slot => ({
                 start: slot.time,
                 end: new DayPilot.Date(slot.time).addMinutes(30).toString(),
-                text: slot.user,
+                text: slot.name,
+                id: DayPilot.guid(),
+                data: { userId: slot.user },
             }));
             setSelectedSlots(slots);
         } else {
@@ -156,12 +158,46 @@ const FinalizeMeeting = () => {
         setSelectedSlots(selectedSlots.filter(slot => slot.id !== args.e.data.id));
     }
 
+    const handleEventMove = async (args) => {
+        const { e, newStart, newEnd } = args;
+        const userId = e.data.data.userId;
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get(`http://127.0.0.1:8000/api/meeting/participant/detail/${meeting_id}/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const isValidMove = response.data.time_slots.some(slot => {
+                const slotStart = new DayPilot.Date(slot.start_time);
+                const slotEnd = slotStart.addMinutes(30);
+                return newStart.getTime() === slotStart.getTime() && newEnd.getTime() === slotEnd.getTime();
+            });
+
+            if (!isValidMove) {
+                alert("You cannot move the slot outside the participant's available time.");
+                args.preventDefault();
+                return;
+            }
+
+            setSelectedSlots(prevSlots => prevSlots.map(slot => {
+                if (slot.id === e.data.id) {
+                    return { ...slot, start: newStart, end: newEnd };
+                }
+                return slot;
+            }));
+        } catch (error) {
+            console.error('Failed to validate move:', error);
+            setError("Failed to validate the slot move.");
+        }
+    };
+
     const calendarConfig = {
         viewType: "Week",
         durationBarVisible: true,
         timeRangeSelectedHandling: "Enabled",
         // onTimeRangeSelected: handleTimeRangeSelected,
-        eventMoveHandling: "Disabled",
+        eventMoveHandling: "Enabled",
+        onEventMove: handleEventMove,
         eventResizeHandling: "Disabled",
         // onEventClick: handleEventClick,
         eventDeleteHandling: "Enabled",
@@ -203,7 +239,7 @@ const FinalizeMeeting = () => {
                                 />
                             </div>
                             <div style={{flexGrow: "1"}}>
-                                <DayPilotCalendar {...calendarConfig} />
+                                <DayPilotCalendar {...calendarConfig} ref={calendarRef}/>
                             </div>
                         </div>
                     </div>
