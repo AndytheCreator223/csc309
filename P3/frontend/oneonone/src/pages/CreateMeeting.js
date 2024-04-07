@@ -9,7 +9,7 @@ const CreateMeeting = () => {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [deadline, setDeadline] = useState('');
-    const [timeLimit, setTimeLimit] = useState('');
+    const [timeLimit, setTimeLimit] = useState(30);
     const [error, setError] = useState('');
     const [isCustomTime, setIsCustomTime] = useState(false);
     const [contacts, setContacts] = useState([]);
@@ -52,6 +52,11 @@ const CreateMeeting = () => {
 
         fetchContacts();
         fetchGroups();
+    }, []);
+
+    useEffect(() => {
+      // Set the time limit to 30 minutes when the component mounts or when certain conditions change
+      setTimeLimit(30);
     }, []);
 
     const notifyParticipantsByEmail = async (meetingId) => {
@@ -261,31 +266,6 @@ const CreateMeeting = () => {
                                    className="label-frame label-frame-purple form-label"> Deadline:</label>
                             <input type="datetime-local" id="deadline" className="form-control" value={deadline}
                                    onChange={(e) => setDeadline(e.target.value)} required/>
-                        </div>
-                        <div className="appointment-length" style={{marginBottom: "10px"}}>
-                            <label htmlFor="time" className="label-frame label-frame-dblue form-label"> Appointment
-                                length:</label>
-                            <div>
-                                <select className="form-control" style={{marginBottom: "10px"}}
-                                        onChange={handleTimeLimitChange}
-                                        value={isCustomTime ? "Custom" : timeLimit}>
-                                    <option value="" disabled>Select your option</option>
-                                    <option value="30">30 minutes</option>
-                                    <option value="60">1 hour</option>
-                                    <option value="90">1 hour 30 minutes</option>
-                                    <option value="120">2 hours</option>
-                                    <option value="Custom">Custom</option>
-                                </select>
-                                {isCustomTime && (
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        value={timeLimit}
-                                        onChange={handleCustomTimeChange}
-                                        placeholder="Time in minutes (Must be divisible by 30)"
-                                    />
-                                )}
-                            </div>
                         </div>
                         {/* Contacts selection dropdown */}
                         <div className="form-group">

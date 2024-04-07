@@ -98,11 +98,8 @@ class PendingMeetingCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'message', 'deadline', 'time_limit']
 
     def validate_time_limit(self, value):
-        if value == 0:
-            raise serializers.ValidationError("The time limit must not be 0.")
-        # Check if the time_limit can be evenly divided by 30
-        if value % 30 != 0:
-            raise serializers.ValidationError("The time limit must be divisible by 30 minutes.")
+        if value != 30:
+            raise serializers.ValidationError("The time limit must be 30.")
         return value
 
     def validate_deadline(self, value):
