@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { MeetingProvider } from '../contexts/MeetingContext';
 import axios from 'axios';
 import SelectCalendar from "../components/SelectCalendar";
+import { MeetingContext } from '../contexts/MeetingContext';
 
 const FinalizeMeeting = () => {
     const { meeting_id } = useParams();
     const [meetingDetails, setMeetingDetails] = useState(null);
     const [error, setError] = useState('');
     const [participants, setParticipants] = useState([]);
+    const { setSelectedSlots } = useContext(MeetingContext);
 
     useEffect(() => {
         const fetchMeetingDetails = async () => {
@@ -62,7 +64,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            console.log(response.data);
+            setSelectedSlots(response.data);
         } catch (error) {
             console.error('Failed to fetch participant response:', error);
             setError("Failed to load participant response.");
@@ -90,7 +92,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            console.log(response.data);
+            setSelectedSlots(response.data);
         } catch (error) {
             console.error('Failed to get suggested meeting:', error);
             setError("Failed to load suggested meeting.");
@@ -108,7 +110,7 @@ const FinalizeMeeting = () => {
                     },
                 }
             );
-            console.log(response.data);
+            setSelectedSlots(response.data);
         } catch (error) {
             console.error('Failed to get suggested meeting:', error);
             setError("Failed to load suggested meeting.");
