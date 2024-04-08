@@ -27,7 +27,8 @@ const Login = () => {
 
         try {
             const credentialsJSON = JSON.stringify(credentials);
-            const response = await axios.post('http://127.0.0.1:8000/api/token/', credentialsJSON, config);
+            // const response = await axios.post('http://127.0.0.1:8000/api/token/', credentialsJSON, config);
+            const response = await axios.post('http://0.0.0.0:10000/api/token/', credentialsJSON, config);
             console.log(response.data);
 
             // Store the token in local storage
