@@ -18,7 +18,7 @@ const Notifications = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       const response = await axios.get(
-        "http://127.0.0.1:8000/api/account/notifications/",
+        "https://oneonone-backend.onrender.com/api/account/notifications/",
         config
       );
       setNotifications(response.data);
@@ -36,7 +36,7 @@ const Notifications = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/account/notifications/${notificationId}/`,
+        `https://oneonone-backend.onrender.com/api/account/notifications/${notificationId}/`,
         config
       );
 
@@ -57,7 +57,7 @@ const Notifications = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       await axios.post(
-        "http://127.0.0.1:8000/api/account/notifications/mark-all-seen/",
+        "https://oneonone-backend.onrender.com/api/account/notifications/mark-all-seen/",
         {}, // No data needed for this request
         config
       );
@@ -76,7 +76,7 @@ const Notifications = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       await axios.delete(
-        `http://127.0.0.1:8000/api/account/notifications/delete/${notificationId}/`,
+        `https://oneonone-backend.onrender.com/api/account/notifications/delete/${notificationId}/`,
         config
       );
       // After deletion, refresh the notifications list
@@ -95,7 +95,7 @@ const Notifications = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       await axios.post(
-        "http://127.0.0.1:8000/api/account/notifications/delete-read/",
+        "https://oneonone-backend.onrender.com/api/account/notifications/delete-read/",
         {}, // No data needed for this request
         config
       );

@@ -21,7 +21,8 @@ const AccountUpdate = () => {
         const config = {
           headers: { Authorization: `Bearer ${token}` },
         };
-        const response = await axios.get('http://127.0.0.1:8000/api/account/profile/', config);
+        // const response = await axios.get('http://127.0.0.1:8000/api/account/profile/', config);
+        const response = await axios.get('https://oneonone-backend.onrender.com/api/account/profile/', config);
         setProfile(prevState => ({
           ...prevState,
           username: response.data.username,
@@ -66,8 +67,8 @@ const AccountUpdate = () => {
     try {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.patch('http://127.0.0.1:8000/api/account/profile/', formData, config);
-  
+      // await axios.patch('http://127.0.0.1:8000/api/account/profile/', formData, config);
+      await axios.patch('https://oneonone-backend.onrender.com/api/account/profile/', formData, config);
       window.alert("Profile updated");
       setError('');
     } catch (err) {

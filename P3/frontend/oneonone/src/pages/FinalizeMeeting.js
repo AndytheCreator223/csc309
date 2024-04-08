@@ -19,7 +19,7 @@ const FinalizeMeeting = () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    `http://127.0.0.1:8000/api/meeting/pending-meeting/detail/${meeting_id}`,
+                    `https://oneonone-backend.onrender.com/api/meeting/pending-meeting/detail/${meeting_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -37,7 +37,7 @@ const FinalizeMeeting = () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    `http://127.0.0.1:8000/api/meeting/participant/list/${meeting_id}`,
+                    `https://oneonone-backend.onrender.com/api/meeting/participant/list/${meeting_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -81,7 +81,7 @@ const FinalizeMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/meeting/participant/detail/${meeting_id}/${userId}`,
+                `https://oneonone-backend.onrender.com/api/meeting/participant/detail/${meeting_id}/${userId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ const FinalizeMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/meeting/suggested-meeting/get-order/${meetingId}`,
+                `https://oneonone-backend.onrender.com/api/meeting/suggested-meeting/get-order/${meetingId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -129,7 +129,7 @@ const FinalizeMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.get(
-                `http://127.0.0.1:8000/api/meeting/suggested-meeting/get-priority/${meetingId}`,
+                `https://oneonone-backend.onrender.com/api/meeting/suggested-meeting/get-priority/${meetingId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -160,7 +160,7 @@ const FinalizeMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/meeting/finalized-meeting/create/`,
+                `https://oneonone-backend.onrender.com/api/meeting/finalized-meeting/create/`,
                 requestBody,
                 {
                     headers: {
@@ -211,7 +211,7 @@ const FinalizeMeeting = () => {
         const userId = e.data.data.userId;
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get(`http://127.0.0.1:8000/api/meeting/participant/detail/${meeting_id}/${userId}`, {
+            const response = await axios.get(`https://oneonone-backend.onrender.com/api/meeting/participant/detail/${meeting_id}/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

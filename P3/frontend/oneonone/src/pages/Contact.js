@@ -18,7 +18,7 @@ const Contacts = () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const response = await axios.get(
-        "http://127.0.0.1:8000/api/account/contacts/",
+        "https://oneonone-backend.onrender.com/api/account/contacts/",
         config
       );
       setContacts(response.data);
@@ -38,7 +38,7 @@ const Contacts = () => {
       };
       // Send the GET request to the backend endpoint
       const response = await axios.get(
-        "http://127.0.0.1:8000/api/account/group/",
+        "https://oneonone-backend.onrender.com/api/account/group/",
         config
       );
       setGroups(response.data); // Update the state with the fetched groups
@@ -72,7 +72,7 @@ const Contacts = () => {
       };
       const data = { name: groupToAdd };
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/account/group/create/",
+        "https://oneonone-backend.onrender.com/api/account/group/create/",
         data,
         config
       );
@@ -110,7 +110,7 @@ const Contacts = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      const url = `http://127.0.0.1:8000/api/account/group/${groupId}/delete/`;
+      const url = `https://oneonone-backend.onrender.com/api/account/group/${groupId}/delete/`;
       await axios.delete(url, config);
       setGroups((currentGroups) =>
         currentGroups.filter((group) => group.id !== groupId)
@@ -155,7 +155,7 @@ const Contacts = () => {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/account/group/${groupId}/add/${selectedUser}/`, // Adjust URL as needed
+      `https://oneonone-backend.onrender.com/api/account/group/${groupId}/add/${selectedUser}/`, // Adjust URL as needed
       data,
       config
     );
@@ -191,7 +191,7 @@ const Contacts = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      const url = `http://127.0.0.1:8000/api/account/group/${groupId}/remove/${encodeURIComponent(
+      const url = `https://oneonone-backend.onrender.com/api/account/group/${groupId}/remove/${encodeURIComponent(
         username
       )}/`;
       await axios.post(url, {}, config); // Note the change here from axios.delete to axios.post
@@ -225,7 +225,7 @@ const Contacts = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const data = { username };
       await axios.post(
-        "http://127.0.0.1:8000/api/account/contacts/add/",
+        "https://oneonone-backend.onrender.com/api/account/contacts/add/",
         data,
         config
       );
@@ -260,7 +260,7 @@ const Contacts = () => {
     const data = { name: newGroupName[groupId] }; // Use group ID to get specific new name
 
     try {
-      await axios.patch(`http://127.0.0.1:8000/api/account/group/${groupId}/change-name/`, data, config);
+      await axios.patch(`https://oneonone-backend.onrender.com/api/account/group/${groupId}/change-name/`, data, config);
       setGroups(groups.map(group => {
         if (group.id === groupId) {
           return { ...group, name: newGroupName[groupId] };
@@ -296,7 +296,7 @@ const Contacts = () => {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(
-        `http://127.0.0.1:8000/api/account/contacts/delete/${contactUsername}/`,
+        `https://oneonone-backend.onrender.com/api/account/contacts/delete/${contactUsername}/`,
         config
       );
       fetchContacts();

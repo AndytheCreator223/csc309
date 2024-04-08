@@ -23,7 +23,7 @@ const CreateMeeting = () => {
         const fetchContacts = async () => {
             try {
                 const token = localStorage.getItem("token"); // Assuming token storage for authentication
-                const response = await axios.get("http://127.0.0.1:8000/api/account/contacts/", {
+                const response = await axios.get("https://oneonone-backend.onrender.com/api/account/contacts/", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -38,7 +38,7 @@ const CreateMeeting = () => {
         const fetchGroups = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("http://127.0.0.1:8000/api/account/group/", {
+                const response = await axios.get("https://oneonone-backend.onrender.com/api/account/group/", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -63,7 +63,7 @@ const CreateMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/meeting/create-meeting-notify/`,
+                `https://oneonone-backend.onrender.com/api/meeting/create-meeting-notify/`,
                 { meeting_id: meetingId },
                 {
                     headers: {
@@ -83,7 +83,7 @@ const CreateMeeting = () => {
 
     const addParticipantsToMeeting = async (meetingId, participants) => {
         const participantPromises = participants.map(participantId =>
-            axios.post('http://127.0.0.1:8000/api/meeting/participant/create/', {
+            axios.post('https://oneonone-backend.onrender.com/api/meeting/participant/create/', {
                 meeting: meetingId,
                 user: participantId // Here, participantId is actually the user ID of each contact
             }, {
@@ -107,7 +107,7 @@ const CreateMeeting = () => {
 
             while (current < end) {
                 const priority = slot.priority === "High" ? 1 : 0;
-                await axios.post('http://127.0.0.1:8000/api/meeting/time-slots/create/', {
+                await axios.post('https://oneonone-backend.onrender.com/api/meeting/time-slots/create/', {
                     meeting: meetingId,
                     start_time: current.toString(),
                     priority: priority,
@@ -197,7 +197,7 @@ const CreateMeeting = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
-                "http://127.0.0.1:8000/api/meeting/pending-meeting/create/",
+                "https://oneonone-backend.onrender.com/api/meeting/pending-meeting/create/",
                 formData,
                 {
                     headers: {

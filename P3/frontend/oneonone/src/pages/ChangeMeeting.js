@@ -17,7 +17,7 @@ const ChangeMeeting = () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    `http://127.0.0.1:8000/api/meeting/pending-meeting/detail/${meeting_id}`,
+                    `https://oneonone-backend.onrender.com/api/meeting/pending-meeting/detail/${meeting_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -35,7 +35,7 @@ const ChangeMeeting = () => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    `http://127.0.0.1:8000/api/meeting/participant/list/${meeting_id}`,
+                    `https://oneonone-backend.onrender.com/api/meeting/participant/list/${meeting_id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -61,7 +61,7 @@ const ChangeMeeting = () => {
 
             while (current < end) {
                 const priority = slot.priority === "High" ? 1 : 0;
-                await axios.post('http://127.0.0.1:8000/api/meeting/time-slots/create/', {
+                await axios.post('https://oneonone-backend.onrender.com/api/meeting/time-slots/create/', {
                     meeting: meetingId,
                     start_time: current.toString(),
                     priority: priority,
@@ -81,7 +81,7 @@ const ChangeMeeting = () => {
             const token = localStorage.getItem("token");
             // Call the API to delete existing time slots for the meeting
             await axios.delete(
-                `http://127.0.0.1:8000/api/meeting/time-slots/delete/${meeting_id}/`,
+                `https://oneonone-backend.onrender.com/api/meeting/time-slots/delete/${meeting_id}/`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

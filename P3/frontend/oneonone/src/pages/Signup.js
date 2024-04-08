@@ -32,8 +32,8 @@ const Signup = () => {
 
     try {
       const userDataJSON = JSON.stringify(userData);
-      const response = await axios.post('http://127.0.0.1:8000/api/account/register/', userDataJSON, config);
-
+      // const response = await axios.post('http://127.0.0.1:8000/api/account/register/', userDataJSON, config);
+      const response = await axios.post('https://oneonone-backend.onrender.com/api/account/register/', userDataJSON, config);
       console.log(response.data);
 
       // Redirecting to Login page

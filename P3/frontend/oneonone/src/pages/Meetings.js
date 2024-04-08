@@ -15,9 +15,9 @@ const Meetings = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
-            let pendingUrl = 'http://127.0.0.1:8000/api/meeting/pending-meeting/list/';
+            let pendingUrl = 'https://oneonone-backend.onrender.com/api/meeting/pending-meeting/list/';
             if (viewType === 'participated') {
-                pendingUrl = 'http://127.0.0.1:8000/api/meeting/pending-meeting/participant-meetings/'; // URL for participated meetings
+                pendingUrl = 'https://oneonone-backend.onrender.com/api/meeting/pending-meeting/participant-meetings/'; // URL for participated meetings
             }
 
             // Fetch pending meetings based on viewType
@@ -40,7 +40,7 @@ const Meetings = () => {
             }
 
             setPendingMeetings(modifiedPendingMeetings);
-            const finalizedResponse = await axios.get('http://127.0.0.1:8000/api/meeting/finalized-meeting/list/', config);
+            const finalizedResponse = await axios.get('https://oneonone-backend.onrender.com/api/meeting/finalized-meeting/list/', config);
             setFinalizedMeetings(finalizedResponse.data);
         } catch (err) {
             setError('Failed to fetch meetings data');
@@ -57,7 +57,7 @@ const Meetings = () => {
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.post('http://127.0.0.1:8000/api/meeting/pending-meeting/notify/', { meeting_id: meetingId }, config);
+            await axios.post('https://oneonone-backend.onrender.com/api/meeting/pending-meeting/notify/', { meeting_id: meetingId }, config);
             alert('Notification sent to all non-responding participants.');
         } catch (err) {
             setError('Failed to send notification');
@@ -68,7 +68,7 @@ const Meetings = () => {
     const handleDelete = async (meetingId) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://127.0.0.1:8000/api/meeting/pending-meeting/delete/${meetingId}`, {
+            await axios.delete(`https://oneonone-backend.onrender.com/api/meeting/pending-meeting/delete/${meetingId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             fetchMeetings(); // Re-fetch meetings to update the list

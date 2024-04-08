@@ -14,7 +14,7 @@ const Dashboard = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${token}` },
                 };
-                const finalizedResponse = await axios.get('http://127.0.0.1:8000/api/meeting/finalized-meeting/list/', config);
+                const finalizedResponse = await axios.get('https://oneonone-backend.onrender.com/api/meeting/finalized-meeting/list/', config);
 
                 // Sort by time in descending order and take the first five
                 const recentMeetings = finalizedResponse.data
@@ -27,7 +27,7 @@ const Dashboard = () => {
 
                 setFinalizedMeetings(recentMeetings);
 
-                const pendingResponse = await axios.get('http://127.0.0.1:8000/api/meeting/pending-meeting/list/', config);
+                const pendingResponse = await axios.get('https://oneonone-backend.onrender.com/api/meeting/pending-meeting/list/', config);
                 setPendingMeetings(pendingResponse.data);
             } catch (error) {
                 console.error("Failed to fetch meetings", error);
