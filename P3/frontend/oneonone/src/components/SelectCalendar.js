@@ -29,7 +29,7 @@ const SelectCalendar = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${token}` },
                 };
-                const response = await axios.get('http://127.0.0.1:8000/api/meeting/finalized-meeting/list/', config);
+                const response = await axios.get('https://oneonone-backend.onrender.com/api/meeting/finalized-meeting/list/', config);
                 const events = response.data.map(meeting => {
                     let start = new DayPilot.Date(new Date(meeting.time), true);
                     let end = start.addMinutes(meeting.time_limit);

@@ -29,7 +29,7 @@ const InvitedCalendar = ({ meetingId }) => {
                 const config = {
                     headers: { Authorization: `Bearer ${token}` },
                 };
-                const response = await axios.get(`http://127.0.0.1:8000/api/meeting/pending-meeting/detail/${meetingId}`, config);
+                const response = await axios.get(`https://oneonone-backend.onrender.com/api/meeting/pending-meeting/detail/${meetingId}`, config);
                 const timeSlots = response.data.time_slots.map(slot => {
                     const start = new DayPilot.Date(new Date(slot.start_time), true);
                     const end = start.addMinutes(30);

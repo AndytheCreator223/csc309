@@ -14,7 +14,7 @@ const Sidebar = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${token}` },
                 };
-                const response  = await axios.get('http://127.0.0.1:8000/api/account/profile/', config);
+                const response  = await axios.get('https://oneonone-backend.onrender.com/api/account/profile/', config);
                 setUser({
                     ...user,
                     firstName: response.data.first_name,
